@@ -1,5 +1,6 @@
 import pygame
 
+from monsters.monster_logic import *
 from player_logic import *
 
 
@@ -11,6 +12,8 @@ class Board:
 
         # Вычисляем размер окна
         self.window_size = pygame.display.get_window_size()
+
+        self.grass = pygame.image.load('sprites/grass.jpg').convert_alpha()
 
         # Вычисляем размер ячейки с учетом отступов
         self.cell_size = (self.window_size[0] - 2 * padding) // self.width
@@ -28,33 +31,18 @@ class Board:
         self.cell_size = cell_size
 
     def render(self, screen):
-        color = ["white", "#facecc", (255, 255, 255)]
-        color_cell = ["red", "blue", "black"]
+        color = ["white", "#403a3a", (255, 255, 255)]
         for x in range(self.width):
             for y in range(self.height):
-                if self.board[y][x] == 1:
-                    pygame.draw.rect(
-                        screen, color_cell[0],
-                        (x * self.cell_size + self.left, y * self.cell_size + self.top,
-                         self.cell_size, self.cell_size), 0
-                    )
 
-                if self.board[y][x] == 2:
-                    pygame.draw.rect(
-                        screen, color_cell[1],
-                        (x * self.cell_size + self.left, y * self.cell_size + self.top,
-                         self.cell_size, self.cell_size), 0
-                    )
-
-                if self.board[y][x] == 3:
-                    pygame.draw.rect(
-                        screen, color_cell[2],
-                        (x * self.cell_size + self.left, y * self.cell_size + self.top,
-                         self.cell_size, self.cell_size), 0
-                    )
+                # Отображаем спрайт, если он существует
+                if self.grass:
+                    sprite = self.grass
+                    sprite = pygame.transform.scale(sprite, (self.cell_size, self.cell_size))  # Изменяем размер спрайта
+                    screen.blit(sprite, (x * self.cell_size + self.left, y * self.cell_size + self.top))
 
                 pygame.draw.rect(
-                    screen, color[0],
+                    screen, color[1],
                     (x * self.cell_size + self.left, y * self.cell_size + self.top,
                      self.cell_size, self.cell_size), 1
                 )
@@ -79,11 +67,12 @@ class Board:
 if __name__ == '__main__':
     pygame.init()
     fps = 60
-    SIZE = width, height = 1000, 800
+    SIZE = width, height = 1200, 800
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Чёрное в белое и наоборот")
     board = Board(20, 20)
     player = Player(board)
+    monster = Dummy(board, hp=100, default_damage=0)
     running = True
 
     while running:
@@ -98,8 +87,9 @@ if __name__ == '__main__':
                 player.update(keys)
 
         screen.fill((0, 0, 0))
-        screen.blit(player.image, player.rect)
         board.render(screen)
+        screen.blit(player.image, player.rect)
+        screen.blit(monster.image, monster.rect)
 
         player.render_stats(screen)  # Рендерим статистику игрока
 

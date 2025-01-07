@@ -1,15 +1,13 @@
 import time
-
 import pygame
-from main import Board
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, board: Board, *groups, hp=10, default_damage=1, default_armor=1):
+    def __init__(self, board, *groups, hp=10, default_damage=1, default_armor=1):
         super().__init__(*groups)
         self.board = board
 
-        self.default_damage= default_damage
+        self.default_damage = default_damage
         self.default_armor = default_armor
         self.weapon = None
         self.armor = None
@@ -18,10 +16,11 @@ class Player(pygame.sprite.Sprite):
         self.action_count = 4
         self.calc_stats()
 
-
         self.image = pygame.Surface((board.cell_size, board.cell_size))
         self.image.fill("ORANGE")
         self.rect = self.image.get_rect()  # Получаем прямоугольник для спрайта
+
+        self.board.board[0][0] = 10
         self.rect.x, self.rect.y = 0 * board.cell_size + board.left, 0 * board.cell_size + board.top
 
         self.last_move_time = 0  # Время последнего движения
@@ -37,15 +36,15 @@ class Player(pygame.sprite.Sprite):
             self.armor = self.default_armor
             self.damage = self.default_damage
 
-
     def calc_cell(self, cell, action_step):
         x, y = cell
         # Проверяем границы
         if not (0 <= x + action_step[0] < self.board.width and 0 <= y + action_step[1] < self.board.height):
             return x, y  # Возвращаем текущее положение, если движение недопустимо
+        if self.board.board[y + action_step[1]][x + action_step[0]] != 0:
+            return x, y
         self.board.board[y][x] = 0
         return x + action_step[0], y + action_step[1]  # Возвращаем новое положение
-
 
     def render_stats(self, screen):
         # Рисуем зеленый прямоугольник для фона статистики
@@ -63,7 +62,6 @@ class Player(pygame.sprite.Sprite):
         screen.blit(damage_text, (820, 40))
         screen.blit(armor_text, (820, 60))
         screen.blit(actions_text, (820, 80))
-
 
     def update(self, keys):
         current_time = time.time()
