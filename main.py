@@ -1,8 +1,6 @@
-import pygame
-
 from monsters.monster_logic import *
 from player_logic import *
-
+import pygame
 
 class Board:
     def __init__(self, width, height, padding=10):
@@ -70,7 +68,7 @@ if __name__ == '__main__':
     SIZE = width, height = 1200, 800
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Чёрное в белое и наоборот")
-    board = Board(20, 20)
+    board = Board(10, 10)
     player = Player(board)
     monster = Dummy(board, hp=100, default_damage=0)
     running = True
@@ -86,12 +84,19 @@ if __name__ == '__main__':
                 keys = pygame.key.get_pressed()
                 player.update(keys)
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_i:  # Открытие инвентаря по нажатию клавиши 'I'
+                    player.open_inventory()
+
         screen.fill((0, 0, 0))
         board.render(screen)
         screen.blit(player.image, player.rect)
         screen.blit(monster.image, monster.rect)
 
         player.render_stats(screen)  # Рендерим статистику игрока
+
+        player.inventory.draw(screen)
+
 
         pygame.display.flip()
 

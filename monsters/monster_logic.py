@@ -14,6 +14,8 @@ class Monster(pygame.sprite.Sprite):
         self.hp = hp
         self.calc_stats()
 
+        self.take_radus_cell = 1
+
         self.image = pygame.Surface((board.cell_size, board.cell_size))
         self.image.fill("RED")
         self.rect = self.image.get_rect()  # Получаем прямоугольник для спрайта
@@ -56,3 +58,6 @@ class Dummy(Monster):
         self.image.fill("RED")
         self.rect = self.image.get_rect()  # Получаем прямоугольник для спрайта
         self.set_rect(2, 2)
+
+    def update(self, keys):
+        pass
