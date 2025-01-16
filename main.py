@@ -80,7 +80,7 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     board.get_cell(event.pos)
-            if event.type == pygame.KEYDOWN:  # Обработка нажатия клавиш
+            if event.type == pygame.KEYDOWN and not player.inventory.is_open:  # Обработка нажатия клавиш
                 keys = pygame.key.get_pressed()
                 player.update(keys)
 
@@ -94,7 +94,6 @@ if __name__ == '__main__':
         screen.blit(monster.image, monster.rect)
 
         player.render_stats(screen)  # Рендерим статистику игрока
-
         player.inventory.draw(screen)
 
 

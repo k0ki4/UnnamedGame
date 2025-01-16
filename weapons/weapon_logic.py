@@ -15,9 +15,6 @@ class Weapon(pygame.sprite.Sprite):
         self.board.board[0][0] = 10
         self.rect.x, self.rect.y = 0 * board.cell_size + board.left, 0 * board.cell_size + board.top
 
-        self.last_move_time = 0  # Время последнего движения
-        self.move_delay = 0.2  # Задержка в секундах
-
         pygame.font.init()
         self.font = pygame.font.SysFont('Arial', 15)
 
@@ -26,21 +23,3 @@ class Weapon(pygame.sprite.Sprite):
 
     def equip(self, player):
         pass
-
-
-class Sword(Weapon):
-    def __init__(self, board, *groups, damage):
-        self.fall = True
-        super().__init__(board, *groups, damage=damage)
-
-    def equip(self, player):
-        if self.fall:
-            return False
-        player.equip_weapon = self
-        player.inventory -= [self]
-        print('Оружие надето')
-
-    def take(self, player):
-        self.fall = False
-        player.inventory.appned(self)
-        print('Оружие взято')
