@@ -1,7 +1,9 @@
 import time
 import pygame
+from pygame.examples.go_over_there import screen
 
 from inventory_logic import Inventory
+from loot.chest import LootChest
 
 
 class Player(pygame.sprite.Sprite):
@@ -10,6 +12,8 @@ class Player(pygame.sprite.Sprite):
         self.board = board
 
         self.inventory = Inventory()
+
+        self.radar_list = []
 
         self.lvl = 1
 
@@ -53,9 +57,15 @@ class Player(pygame.sprite.Sprite):
         return x + action_step[0], y + action_step[1]  # Возвращаем новое положение
 
     def render_stats(self, screen):
-        # Рисуем зеленый прямоугольник для фона статистики
-        stats_rect = pygame.Rect(800, 10, 190, 130)  # Прямоугольник для статистики
-        pygame.draw.rect(screen, (0, 128, 0), stats_rect)  # Зеленый цвет
+        stats_img = pygame.image.load('sprites/gui/gui.png').convert_alpha()
+        stats_img2 = pygame.image.load('sprites/gui/gui_2.png').convert_alpha()
+        stats_rect = pygame.Rect(800, 6, 400, 785)
+        stats_rect2 = pygame.Rect(800, 6, 400, 785)
+        stats_imp_scaled = pygame.transform.scale(stats_img, (stats_rect.width, stats_rect.height))
+        stats_imp_scaled2 = pygame.transform.scale(stats_img2, (stats_rect2.width, stats_rect.height))
+
+        screen.blit(stats_imp_scaled, stats_rect.topleft)
+        screen.blit(stats_imp_scaled2, stats_rect2.topleft)
 
         # Отображаем текст статистики
         hp_text = self.font.render(f"HP: {self.hp}", True, (255, 255, 255))  # Белый текст
@@ -65,12 +75,16 @@ class Player(pygame.sprite.Sprite):
                                         (255, 255, 255))
         lvl_text = self.font.render(f"Уровень: {self.lvl}", True, (255, 255, 255))
 
+
+        cord_text_x = 840
         # Позиции текста
-        screen.blit(hp_text, (820, 20))
-        screen.blit(damage_text, (820, 40))
-        screen.blit(armor_text, (820, 60))
-        screen.blit(actions_text, (820, 80))
-        screen.blit(lvl_text, (820, 100))
+        screen.blit(hp_text, (cord_text_x, 20))
+        screen.blit(damage_text, (cord_text_x, 40))
+        screen.blit(armor_text, (cord_text_x, 60))
+        screen.blit(actions_text, (cord_text_x, 80))
+        screen.blit(lvl_text, (cord_text_x, 100))
+
+        self.count_usage(screen)
 
     def update(self, keys):
         current_time = time.time()
@@ -103,3 +117,22 @@ class Player(pygame.sprite.Sprite):
 
     def open_inventory(self):
         self.inventory.toggle()
+
+    def count_usage(self, screen):
+        x, y = self.board.get_cell((self.rect.x, self.rect.y))
+        direction = [
+            (-1, 0),  # вверх
+            (1, 0),  # вниз
+            (0, -1),  # влево
+            (0, 1)  # вправо
+        ]
+        for dx, dy in direction:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.board.width and 0 <= ny < self.board.height:
+                if isinstance(self.board.board[ny][nx], LootChest):
+                    self.radar_list.append(self.board.board[ny][nx])
+        take_img = pygame.image.load("sprites/gui/gui_2.png.").convert_alpha()
+        take_img = pygame.transform.scale(take_img, (60, 60))
+        screen.blit(take_img, (820, 500))
+        if self.radar_list:
+            pass

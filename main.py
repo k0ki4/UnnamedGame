@@ -1,6 +1,8 @@
+from loot.chest import LootChest
 from monsters.monster_logic import *
 from player_logic import *
 import pygame
+
 
 class Board:
     def __init__(self, width, height, padding=10):
@@ -67,10 +69,11 @@ if __name__ == '__main__':
     fps = 60
     SIZE = width, height = 1200, 800
     screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption("Чёрное в белое и наоборот")
+    pygame.display.set_caption("Unnamed Game")
     board = Board(10, 10)
     player = Player(board)
     monster = Dummy(board, hp=100, default_damage=0)
+    loot = LootChest(board, x=3, y=4, rarity=2)
     running = True
 
     while running:
@@ -92,10 +95,10 @@ if __name__ == '__main__':
         board.render(screen)
         screen.blit(player.image, player.rect)
         screen.blit(monster.image, monster.rect)
+        screen.blit(loot.image, loot.rect)
 
         player.render_stats(screen)  # Рендерим статистику игрока
         player.inventory.draw(screen)
-
 
         pygame.display.flip()
 

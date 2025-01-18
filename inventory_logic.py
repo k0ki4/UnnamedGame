@@ -95,6 +95,8 @@ class Inventory:
 
         self.background_image = pygame.image.load("sprites/inventory/background.png").convert_alpha()
         self.background_image = pygame.transform.scale(self.background_image, (self.width, self.height))
+        self.background_frame = pygame.image.load("sprites/gui/gui_2.png.").convert_alpha()
+        self.background_frame = pygame.transform.scale(self.background_frame, (self.width, self.height))
 
     def toggle(self):
         self.is_open = not self.is_open  # Переключение состояния инвентаря
@@ -110,6 +112,7 @@ class Inventory:
         if self.is_open:
             # Рисуем фон инвентаря
             screen.blit(self.background_image, (self.x, self.y))  # Отображаем фон на экране
+            screen.blit(self.background_frame, (self.x, self.y))  # Отображаем фон на экране
 
             # Рисуем ячейки
             for slot in self.slots:
