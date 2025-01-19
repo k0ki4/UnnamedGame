@@ -1,4 +1,3 @@
-from loot.chest import LootChest
 from monsters.monster_logic import *
 from player_logic import *
 import pygame

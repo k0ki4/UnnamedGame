@@ -1,6 +1,5 @@
 import time
 import pygame
-from pygame.examples.go_over_there import screen
 
 from inventory_logic import Inventory
 from loot.chest import LootChest
@@ -14,6 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.inventory = Inventory()
 
         self.radar_list = []
+        self.radar_img = None
 
         self.lvl = 1
 
@@ -67,6 +67,20 @@ class Player(pygame.sprite.Sprite):
         screen.blit(stats_imp_scaled, stats_rect.topleft)
         screen.blit(stats_imp_scaled2, stats_rect2.topleft)
 
+        take_img = pygame.image.load("sprites/take.png").convert_alpha()
+        take_img = pygame.transform.scale(take_img, (60, 60))
+        take_img_rect = pygame.Rect(850, 500, 57, 57)
+        screen.blit(take_img, take_img_rect)
+
+        take_text_take = self.font.render("Взаимодействовать", True, (255, 255, 255))  # Белый текст
+        take_text = self.font.render("E", True, (255, 255, 255))  # Белый текст
+        screen.blit(take_text_take, (815, 470))
+        if self.radar_list:
+            text_width, text_height = take_text.get_size()
+            text_x = take_img_rect.x + (take_img_rect.width - text_width) // 2
+            text_y = take_img_rect.y + (take_img_rect.height - text_height) // 2
+            screen.blit(take_text, (text_x, text_y))
+
         # Отображаем текст статистики
         hp_text = self.font.render(f"HP: {self.hp}", True, (255, 255, 255))  # Белый текст
         damage_text = self.font.render(f"Урон: {self.damage}", True, (255, 255, 255))
@@ -84,7 +98,7 @@ class Player(pygame.sprite.Sprite):
         screen.blit(actions_text, (cord_text_x, 80))
         screen.blit(lvl_text, (cord_text_x, 100))
 
-        self.count_usage(screen)
+        self.count_usage()
 
     def update(self, keys):
         current_time = time.time()
@@ -113,13 +127,27 @@ class Player(pygame.sprite.Sprite):
                 self.board.board[y][x] = 10
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
+            if keys[pygame.K_e]:
+                if self.radar_list:
+                    for i in self.radar_list:
+                        if isinstance(i, LootChest):
+                            i.toggle_chest()
+                pass
             self.last_move_time = current_time
+            self.radar_list = []
 
     def open_inventory(self):
         self.inventory.toggle()
 
-    def count_usage(self, screen):
-        x, y = self.board.get_cell((self.rect.x, self.rect.y))
+    def get_cell(self, mouse_pos):
+        cell_x = (mouse_pos[0] - self.board.left) // self.board.cell_size
+        cell_y = (mouse_pos[1] - self.board.top) // self.board.cell_size
+        if 0 <= cell_x <= self.board.width and 0 <= cell_y <= self.board.height:
+            return cell_x, cell_y
+        return None
+
+    def count_usage(self):
+        x, y = self.get_cell((self.rect.x, self.rect.y))
         direction = [
             (-1, 0),  # вверх
             (1, 0),  # вниз
@@ -130,9 +158,5 @@ class Player(pygame.sprite.Sprite):
             nx, ny = x + dx, y + dy
             if 0 <= nx < self.board.width and 0 <= ny < self.board.height:
                 if isinstance(self.board.board[ny][nx], LootChest):
-                    self.radar_list.append(self.board.board[ny][nx])
-        take_img = pygame.image.load("sprites/gui/gui_2.png.").convert_alpha()
-        take_img = pygame.transform.scale(take_img, (60, 60))
-        screen.blit(take_img, (820, 500))
-        if self.radar_list:
-            pass
+                    if self.board.board[ny][nx] not in self.radar_list:
+                        self.radar_list.append(self.board.board[ny][nx])

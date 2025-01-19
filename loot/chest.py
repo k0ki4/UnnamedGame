@@ -4,6 +4,7 @@ import pygame.sprite
 class LootChest(pygame.sprite.Sprite):
 
     def __init__(self, board, *groups, x, y, rarity=1):
+        self.board = board
         base_path = './sprites/chest/'
 
         self.sprites = [
@@ -14,8 +15,9 @@ class LootChest(pygame.sprite.Sprite):
         ]
 
         self.open_chest = pygame.image.load(base_path + 'open_chest.png').convert_alpha()
+        self.open_chest = pygame.transform.scale(self.open_chest, (self.board.cell_size, self.board.cell_size))
+
         super().__init__(*groups)
-        self.board = board
         self.rarity = rarity
         self.image = None
         self.get_image_by_rarity()
@@ -29,13 +31,20 @@ class LootChest(pygame.sprite.Sprite):
             if i == self.rarity:
                 self.image = self.sprites[i - 1]
 
+    def toggle_chest(self):
+        if not self.is_open:
+            self.is_open = True
+            self.image = pygame.transform.scale(self.open_chest, (self.board.cell_size, self.board.cell_size))
+            print('Сундук открыт')
+        else:
+            print('Сундук уже открыт')
+
     def set_rect(self, x, y):
         self.rect.x, self.rect.y = x * self.board.cell_size + self.board.left, y * self.board.cell_size + self.board.top
         self.board.board[y][x] = self
         for i in self.board.board:
             print(i)
         print()
-
 
     def __repr__(self):
         return f'Chest: {self.rarity}'
