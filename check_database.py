@@ -2,7 +2,6 @@ import sqlite3
 
 from weapons.weapon_logic import weapons_list
 
-
 def check_db():
     with sqlite3.connect('database.db') as db:
         cursor = db.cursor()

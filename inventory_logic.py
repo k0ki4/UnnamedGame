@@ -14,10 +14,10 @@ class InventorySlot:
         # Рисуем границу ячейки
         screen.blit(self.image_slot, (self.x, self.y))
         if self.item:
-            font = pygame.font.Font(None, 24)
-            text = font.render(self.item, True, "WHITE")
-            text_rect = text.get_rect(center=self.rect.center)
-            screen.blit(text, text_rect)
+            self.item.draw(screen, self.rect)
+
+    def get_rect(self):
+        return self.size
 
 
 class HelmetSlot(InventorySlot):
@@ -64,7 +64,7 @@ class AccessoriesItemSlot(InventorySlot):
 
 class Inventory:
     def __init__(self):
-        cell_width, cell_height = 57, 57
+        self.cell_size = cell_width, cell_height = 57, 57
         cell_spacing = 0
 
         self.slots = []

@@ -106,25 +106,25 @@ class Player(pygame.sprite.Sprite):
             if keys[pygame.K_w]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (0, -1))
-                self.board.board[y][x] = 10
+                self.board.board[y][x] = self
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
             if keys[pygame.K_s]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (0, 1))
-                self.board.board[y][x] = 10
+                self.board.board[y][x] = self
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
             if keys[pygame.K_a]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (-1, 0))
-                self.board.board[y][x] = 10
+                self.board.board[y][x] = self
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
             if keys[pygame.K_d]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (1, 0))
-                self.board.board[y][x] = 10
+                self.board.board[y][x] = self
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
             if keys[pygame.K_e]:
@@ -160,3 +160,6 @@ class Player(pygame.sprite.Sprite):
                 if isinstance(self.board.board[ny][nx], LootChest):
                     if self.board.board[ny][nx] not in self.radar_list:
                         self.radar_list.append(self.board.board[ny][nx])
+
+    def __repr__(self):
+        return 'player'

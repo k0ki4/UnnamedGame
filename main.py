@@ -1,6 +1,9 @@
+from check_database import check_db
 from monsters.monster_logic import *
 from player_logic import *
 import pygame
+
+from weapons.weapon_logic import randomize_weapons, result_weapon
 
 
 class Board:
@@ -62,8 +65,15 @@ class Board:
         cell = self.get_cell(mouse_pos)
         self.on_click(cell)
 
+    def get_player(self):
+        for x in range(self.width):
+            for y in range(self.height):
+                if isinstance(self.board[y][x], Player):
+                    return self.board[y][x]
+
 
 if __name__ == '__main__':
+    check_db()
     pygame.init()
     fps = 60
     SIZE = width, height = 1200, 800
@@ -73,6 +83,9 @@ if __name__ == '__main__':
     player = Player(board)
     monster = Dummy(board, hp=100, default_damage=0)
     loot = LootChest(board, x=3, y=4, rarity=2)
+    loot2 = LootChest(board, x=4, y=4, rarity=3)
+
+
     running = True
 
     while running:
@@ -80,8 +93,13 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
+                if event.button == 1 and not player.inventory.is_open:
                     board.get_cell(event.pos)
+                else:
+                    for weapon in result_weapon:
+                        if weapon.rect.collidepoint(event.pos):
+                            weapon.on_click()
+
             if event.type == pygame.KEYDOWN and not player.inventory.is_open:  # Обработка нажатия клавиш
                 keys = pygame.key.get_pressed()
                 player.update(keys)
@@ -89,12 +107,13 @@ if __name__ == '__main__':
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_i:  # Открытие инвентаря по нажатию клавиши 'I'
                     player.open_inventory()
-
         screen.fill((0, 0, 0))
         board.render(screen)
         screen.blit(player.image, player.rect)
         screen.blit(monster.image, monster.rect)
         screen.blit(loot.image, loot.rect)
+        screen.blit(loot2.image, loot2.rect)
+
 
         player.render_stats(screen)  # Рендерим статистику игрока
         player.inventory.draw(screen)
