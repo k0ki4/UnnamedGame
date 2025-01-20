@@ -96,10 +96,12 @@ if __name__ == '__main__':
                 if event.button == 1 and not player.inventory.is_open:
                     board.get_cell(event.pos)
                 elif event.button == 1 and player.inventory.is_open:
-                    for weapon in result_weapon:
-                        if weapon.rect.collidepoint(event.pos) and weapon.rect.topleft[0] >= 0 and weapon.rect.topleft[
-                            1] >= 0:
-                            weapon.on_click()
+                    for slot in player.inventory.slots:
+                        item = slot.item
+                        if item is not None:
+                            if item.rect.collidepoint(event.pos) and item.rect.topleft[0] >= 0 and item.rect.topleft[
+                                1] >= 0:
+                                item.on_click(player)
 
             if event.type == pygame.KEYDOWN and not player.inventory.is_open:  # Обработка нажатия клавиш
                 keys = pygame.key.get_pressed()
@@ -120,11 +122,11 @@ if __name__ == '__main__':
         player.inventory.draw(screen)
 
         if player.inventory.is_open:
-            for weapon in result_weapon:
-                weapon.stats_update(screen)
-
+            for slot in player.inventory.slots:
+                item = slot.item
+                if item is not None:
+                    item.stats_update(screen)
 
         pygame.display.flip()
-
 
     pygame.quit()

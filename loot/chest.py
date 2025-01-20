@@ -2,7 +2,7 @@ import random
 
 import pygame.sprite
 
-from weapons.weapon_logic import filter_weapons_by_rarity, Weapon, result_weapon
+from weapons.weapon_logic import filter_weapons_by_rarity, result_weapon
 
 
 class LootChest(pygame.sprite.Sprite):
@@ -41,7 +41,11 @@ class LootChest(pygame.sprite.Sprite):
                                                                                                        self.rarity - 1)
         else:
             new_list = filter_weapons_by_rarity(result_weapon, self.rarity)
-        return random.choice(new_list)
+
+        item = random.choice(new_list)
+        item = item.return_copy()
+
+        return item
 
     def toggle_chest(self):
         if not self.is_open:
@@ -82,10 +86,15 @@ class InfinityChest(LootChest):
             player = self.board.get_player()
             item = self.get_weapons_for_rarity()
             player.inventory.add_item(item)
+            print(item)
+
             print(f'Редкость: {self.rarity}')
             print('Сундук открыт')
             print(f'Редкость предмета: {item.rarity}')
             if self.rarity > item.rarity:
                 bonus = random.randint(1, 5)
+                item.get_bonus(bonus)
+            else:
+                bonus = random.randint(1, 3)
                 item.get_bonus(bonus)
                 print(f'Бонус к оружию +{bonus}')

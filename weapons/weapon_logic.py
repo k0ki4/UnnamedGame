@@ -1,8 +1,6 @@
-import copy
 import sqlite3
 
 import pygame
-from pygame.examples.cursors import image
 
 weapons_list = [
     {"name": "Меч", "damage": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/sword/sword_r1.png"},
@@ -46,11 +44,13 @@ class Weapon(pygame.sprite.Sprite):
     def equip(self, player):
         pass
 
-    def on_click(self):
+    def on_click(self, player):
         print(f'Выбранно оружие: {self.name}')
-        for other_weapon in result_weapon:
-            if other_weapon != self:
-                other_weapon.open_stats = False
+        for slot in player.inventory.slots:
+            item = slot.item
+            if item is not None:
+                if item != self:
+                    item.open_stats = False
         self.open_stats = not self.open_stats
         print(self.open_stats)
 
@@ -65,15 +65,13 @@ class Weapon(pygame.sprite.Sprite):
 
             pygame.font.init()
             font_medium = pygame.font.SysFont('Arial', 20)
-            font_large = pygame.font.SysFont('Arial', 35)
+            font_large = pygame.font.SysFont('Arial', 30)
 
             name = font_large.render(f"{self.name}", True, self.color_rarity[self.rarity])  # Белый текст
             damage_text = font_medium.render(f"Урон: {self.damage}", True, (255, 255, 255))
             bonus_text = font_medium.render(f"Бонус редкости: {self.bonus}", True,
                                             (255, 255, 255))
             lvl_text = font_medium.render(f"Бонус уровня: {self.lvl_bonus}", True, (255, 255, 255))
-
-
 
             screen.blit(frame, rect_frame)
             screen.blit(frame2, rect_frame2)
