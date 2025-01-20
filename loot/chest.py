@@ -69,3 +69,23 @@ class LootChest(pygame.sprite.Sprite):
 
     def __repr__(self):
         return f'Chest: {self.rarity}'
+
+
+class InfinityChest(LootChest):
+    def __init__(self, board, *groups, x, y, rarity=1):
+        super().__init__(board, *groups, x=x, y=y, rarity=rarity)
+
+        self.infinity = True
+
+    def toggle_chest(self):
+        if not self.is_open and self.infinity:
+            player = self.board.get_player()
+            item = self.get_weapons_for_rarity()
+            player.inventory.add_item(item)
+            print(f'Редкость: {self.rarity}')
+            print('Сундук открыт')
+            print(f'Редкость предмета: {item.rarity}')
+            if self.rarity > item.rarity:
+                bonus = random.randint(1, 5)
+                item.get_bonus(bonus)
+                print(f'Бонус к оружию +{bonus}')

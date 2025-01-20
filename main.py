@@ -1,9 +1,10 @@
 from check_database import check_db
+from loot.chest import InfinityChest
 from monsters.monster_logic import *
 from player_logic import *
 import pygame
 
-from weapons.weapon_logic import randomize_weapons, result_weapon
+from weapons.weapon_logic import result_weapon
 
 
 class Board:
@@ -81,10 +82,10 @@ if __name__ == '__main__':
     pygame.display.set_caption("Unnamed Game")
     board = Board(10, 10)
     player = Player(board)
-    monster = Dummy(board, hp=100, default_damage=0)
+    monster = Dummy(board, 3, 3, hp=100, default_damage=0)
     loot = LootChest(board, x=3, y=4, rarity=2)
     loot2 = LootChest(board, x=4, y=4, rarity=3)
-
+    infinity_chest = InfinityChest(board, x=2, y=2, rarity=3)
     running = True
 
     while running:
@@ -96,12 +97,9 @@ if __name__ == '__main__':
                     board.get_cell(event.pos)
                 elif event.button == 1 and player.inventory.is_open:
                     for weapon in result_weapon:
-                        if weapon.open_stats:
-                            weapon.open_stats = not weapon.open_stats
-                    for weapon in result_weapon:
                         if weapon.rect.collidepoint(event.pos) and weapon.rect.topleft[0] >= 0 and weapon.rect.topleft[
                             1] >= 0:
-                            weapon.on_click(screen)
+                            weapon.on_click()
 
             if event.type == pygame.KEYDOWN and not player.inventory.is_open:  # Обработка нажатия клавиш
                 keys = pygame.key.get_pressed()
@@ -116,10 +114,17 @@ if __name__ == '__main__':
         screen.blit(monster.image, monster.rect)
         screen.blit(loot.image, loot.rect)
         screen.blit(loot2.image, loot2.rect)
+        screen.blit(infinity_chest.image, infinity_chest.rect)
 
         player.render_stats(screen)  # Рендерим статистику игрока
         player.inventory.draw(screen)
 
+        if player.inventory.is_open:
+            for weapon in result_weapon:
+                weapon.stats_update(screen)
+
+
         pygame.display.flip()
+
 
     pygame.quit()

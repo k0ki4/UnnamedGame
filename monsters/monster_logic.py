@@ -52,12 +52,12 @@ class Monster(pygame.sprite.Sprite):
 
 
 class Dummy(Monster):
-    def __init__(self, board, *groups, hp=10, default_damage=1, default_armor=1):
+    def __init__(self, board, x, y, *groups, hp=10, default_damage=1, default_armor=1):
         super().__init__(board, *groups, hp=hp, default_damage=default_damage, default_armor=default_armor)
         self.image = pygame.Surface((board.cell_size, board.cell_size))
         self.image.fill("RED")
         self.rect = self.image.get_rect()  # Получаем прямоугольник для спрайта
-        self.set_rect(2, 2)
+        self.set_rect(x, y)
 
     def update(self, keys):
         pass
