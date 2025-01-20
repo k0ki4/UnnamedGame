@@ -85,7 +85,6 @@ if __name__ == '__main__':
     loot = LootChest(board, x=3, y=4, rarity=2)
     loot2 = LootChest(board, x=4, y=4, rarity=3)
 
-
     running = True
 
     while running:
@@ -95,10 +94,14 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and not player.inventory.is_open:
                     board.get_cell(event.pos)
-                else:
+                elif event.button == 1 and player.inventory.is_open:
                     for weapon in result_weapon:
-                        if weapon.rect.collidepoint(event.pos):
-                            weapon.on_click()
+                        if weapon.open_stats:
+                            weapon.open_stats = not weapon.open_stats
+                    for weapon in result_weapon:
+                        if weapon.rect.collidepoint(event.pos) and weapon.rect.topleft[0] >= 0 and weapon.rect.topleft[
+                            1] >= 0:
+                            weapon.on_click(screen)
 
             if event.type == pygame.KEYDOWN and not player.inventory.is_open:  # Обработка нажатия клавиш
                 keys = pygame.key.get_pressed()
@@ -113,7 +116,6 @@ if __name__ == '__main__':
         screen.blit(monster.image, monster.rect)
         screen.blit(loot.image, loot.rect)
         screen.blit(loot2.image, loot2.rect)
-
 
         player.render_stats(screen)  # Рендерим статистику игрока
         player.inventory.draw(screen)

@@ -62,6 +62,8 @@ class AccessoriesItemSlot(InventorySlot):
         self.image_slot = pygame.transform.scale(self.image_slot, (width, height))
 
 
+# inventory
+
 class Inventory:
     def __init__(self):
         self.cell_size = cell_width, cell_height = 57, 57
@@ -105,6 +107,7 @@ class Inventory:
         for slot in self.slots:
             if slot.item is None:  # Находим пустую ячейку
                 slot.item = item
+                item.set_rect(slot.rect)
                 return True
         return False
 

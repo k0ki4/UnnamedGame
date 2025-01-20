@@ -54,8 +54,9 @@ class LootChest(pygame.sprite.Sprite):
             print('Сундук открыт')
             print(f'Редкость предмета: {item.rarity}')
             if self.rarity > item.rarity:
-                print('Бонус к оружию +5')
-                item.damage += 5
+                bonus = random.randint(1, 5)
+                item.get_bonus(bonus)
+                print(f'Бонус к оружию +{bonus}')
         else:
             print('Сундук уже открыт')
 
@@ -68,6 +69,3 @@ class LootChest(pygame.sprite.Sprite):
 
     def __repr__(self):
         return f'Chest: {self.rarity}'
-
-
-

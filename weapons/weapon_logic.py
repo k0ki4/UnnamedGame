@@ -1,6 +1,7 @@
 import sqlite3
 
 import pygame
+from pygame.examples.cursors import image
 
 weapons_list = [
     {"name": "Меч", "damage": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/sword/sword_r1.png"},
@@ -25,9 +26,13 @@ class Weapon(pygame.sprite.Sprite):
         self.name = name
         self.damage = damage
         self.rarity = rarity
+        self.bonus = 0
 
         self.image = pygame.image.load(sprite_path)
         self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = -100, -100
+
+        self.open_stats = False
 
         pygame.font.init()
         self.font = pygame.font.SysFont('Arial', 15)
@@ -35,8 +40,22 @@ class Weapon(pygame.sprite.Sprite):
     def equip(self, player):
         pass
 
-    def on_click(self):
-        pass
+    def on_click(self, screen):
+        print(f'Выбранно оружие: {self.name}')
+        self.open_stats = not self.open_stats
+        print(self.open_stats)
+        if self.open_stats:
+            frame = pygame.image.load('./sprites/gui/gui.png')
+            frame = pygame.transform.scale(frame, (60, 60))
+            rect_frame = pygame.Rect((500, 500, 100, 100))
+            screen.blit(frame, rect_frame)
+
+    def get_bonus(self, bonus):
+        self.bonus = bonus
+        self.damage += bonus
+
+    def set_rect(self, rect):
+        self.rect = rect
 
     def draw(self, screen, slot_rect):
         slot_rect = slot_rect
