@@ -4,8 +4,6 @@ from monsters.monster_logic import *
 from player_logic import *
 import pygame
 
-from weapons.weapon_logic import result_weapon
-
 
 class Board:
     def __init__(self, width, height, padding=10):
@@ -102,6 +100,11 @@ if __name__ == '__main__':
                             if item.rect.collidepoint(event.pos) and item.rect.topleft[0] >= 0 and item.rect.topleft[
                                 1] >= 0:
                                 item.on_click(player)
+                            elif item.button_rect.collidepoint(event.pos) and item.rect.topleft[0] >= 0 and item.rect.topleft[
+                                1] >= 0 and item.open_stats:
+                                player.inventory.equip_item(slot)
+
+
 
             if event.type == pygame.KEYDOWN and not player.inventory.is_open:  # Обработка нажатия клавиш
                 keys = pygame.key.get_pressed()
@@ -122,7 +125,7 @@ if __name__ == '__main__':
         player.inventory.draw(screen)
 
         if player.inventory.is_open:
-            for slot in player.inventory.slots:
+            for slot in player.inventory.slots + player.inventory.unic_slot:
                 item = slot.item
                 if item is not None:
                     item.stats_update(screen)

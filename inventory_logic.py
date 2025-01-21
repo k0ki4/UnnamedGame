@@ -1,5 +1,7 @@
 import pygame
 
+from weapons.weapon_logic import Weapon
+
 
 class InventorySlot:
     def __init__(self, x, y, width, height):
@@ -102,6 +104,20 @@ class Inventory:
 
     def toggle(self):
         self.is_open = not self.is_open  # Переключение состояния инвентаря
+
+    def equip_item(self, slot):
+        slot = slot
+        item = slot.item
+
+        if isinstance(item, Weapon):
+            for search_slot in self.slots + self.unic_slot:
+                if search_slot.item is None and isinstance(search_slot, EquipItemSlot):
+                    if item.is_equip:
+                        return
+                    print('Слот найден')
+                    slot.item = None
+                    search_slot.item = item
+                    item.equip(search_slot.get_rect())
 
     def add_item(self, item):
         for slot in self.slots:

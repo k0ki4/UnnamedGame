@@ -29,11 +29,14 @@ class Weapon(pygame.sprite.Sprite):
         self.bonus = 0
         self.lvl_bonus = 0
 
+        self.button_rect = pygame.Rect((325, 290, 150, 70))
+
         self.image = pygame.image.load(self.sprite_path)
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = -100, -100
 
         self.open_stats = False
+        self.is_equip = False
 
         self.color_rarity = {
             1: 'WHITE',
@@ -41,8 +44,10 @@ class Weapon(pygame.sprite.Sprite):
             3: 'VIOLET',
         }
 
-    def equip(self, player):
-        pass
+    def equip(self, rect):
+        if not self.is_equip:
+            self.is_equip = True
+            self.rect = rect
 
     def on_click(self, player):
         print(f'Выбранно оружие: {self.name}')
@@ -73,6 +78,13 @@ class Weapon(pygame.sprite.Sprite):
                                             (255, 255, 255))
             lvl_text = font_medium.render(f"Бонус уровня: {self.lvl_bonus}", True, (255, 255, 255))
 
+            button_text = font_medium.render("Выбрать", True, (255, 255, 255))
+            text_rect = button_text.get_rect(center=self.button_rect.center)
+
+            frame_button = pygame.image.load('./sprites/gui/gui_2.png').convert_alpha()
+            frame_button = pygame.transform.scale(frame_button, (150, 70))
+
+
             screen.blit(frame, rect_frame)
             screen.blit(frame2, rect_frame2)
 
@@ -81,6 +93,12 @@ class Weapon(pygame.sprite.Sprite):
             screen.blit(damage_text, (cord_text_x, 200))
             screen.blit(bonus_text, (cord_text_x, 230))
             screen.blit(lvl_text, (cord_text_x, 260))
+
+            if not self.is_equip:
+                screen.blit(button_text, text_rect)
+                screen.blit(frame_button, self.button_rect)
+
+
 
     def get_bonus(self, bonus):
         self.bonus = bonus

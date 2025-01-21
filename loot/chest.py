@@ -1,7 +1,6 @@
 import random
 
-import pygame.sprite
-
+import pygame
 from weapons.weapon_logic import filter_weapons_by_rarity, result_weapon
 
 
