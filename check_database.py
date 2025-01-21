@@ -7,12 +7,21 @@ def check_db():
         cursor = db.cursor()
 
         query = """
-        CREATE TABLE IF NOT EXISTS "weapons" (
-            "id" INTEGER,
-            "name" TEXT,
-            "damage" INTEGER,
-            "rarity" INTEGER,
-            "sprite_path" TEXT,
+        CREATE TABLE IF NOT EXISTS weapons (
+            id INTEGER,
+            name TEXT,
+            damage INTEGER,
+            rarity INTEGER,
+            sprite_path TEXT,
+            PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        
+        CREATE TABLE IF NOT EXISTS armor (
+            id INTEGER,
+            name TEXT,
+            protect INTEGER,
+            rarity INTEGER,
+            sprite_path TEXT,
             PRIMARY KEY("id" AUTOINCREMENT)
         );
         """
@@ -24,4 +33,8 @@ def check_db():
             for weapon in weapons_list:
                 cursor.execute("INSERT INTO weapons (name, damage, rarity, sprite_path) VALUES (?, ?, ?, ?)",
                                (weapon["name"], weapon["damage"], weapon["rarity"], weapon["sprite_path"]))
-            db.commit()
+        # cursor.execute("SELECT COUNT(*) FROM armor")
+        # if cursor.fetchone()[0] == 0:
+        #     for weapon in weapons_list:
+        #         cursor.execute("INSERT INTO weapons (name, damage, rarity, sprite_path) VALUES (?, ?, ?, ?)",
+        #                        (weapon["name"], weapon["damage"], weapon["rarity"], weapon["sprite_path"]))

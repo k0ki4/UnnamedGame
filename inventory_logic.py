@@ -1,5 +1,6 @@
 import pygame
 
+from armores.armor_logic import Armor
 from weapons.weapon_logic import Weapon
 
 
@@ -118,6 +119,17 @@ class Inventory:
         item = slot.item
 
         if isinstance(item, Weapon):
+            for search_slot in self.slots + self.unic_slot:
+                if search_slot.item is None and isinstance(search_slot, EquipItemSlot):
+                    if item.is_equip:
+                        return
+                    print('Слот найден')
+                    slot.item = None
+                    search_slot.item = item
+                    search_slot.item.open_stats = False
+                    item.equip(search_slot.get_rect())
+
+        elif isinstance(item, Armor):
             for search_slot in self.slots + self.unic_slot:
                 if search_slot.item is None and isinstance(search_slot, EquipItemSlot):
                     if item.is_equip:

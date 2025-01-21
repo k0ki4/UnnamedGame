@@ -1,29 +1,27 @@
-import sqlite3
+import pygame.sprite
 
-import pygame
 
-weapons_list = [
-    {"name": "Меч", "damage": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/sword/sword_r1.png"},
-    {"name": "Копьё", "damage": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/spear/spear_r1.png"},
-    {"name": "Рапира", "damage": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/rapier/rapier_r1.png"},
+armor_list = [
+    {"name": "Меч", "protect": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/sword/sword_r1.png"},
+    {"name": "Копьё", "protect": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/spear/spear_r1.png"},
+    {"name": "Рапира", "protect": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/rapier/rapier_r1.png"},
 
-    {"name": "Редкий Меч", "damage": 10, "rarity": 2, "sprite_path": "sprites/weapons_image/sword/sword_r2.png"},
-    {"name": "Редкое Копьё", "damage": 10, "rarity": 2, "sprite_path": "sprites/weapons_image/spear/spear_r2.png"},
-    {"name": "Редкая Рапира", "damage": 10, "rarity": 2, "sprite_path": "sprites/weapons_image/rapier/rapier_r1.png"},
+    {"name": "Редкий Меч", "protect": 10, "rarity": 2, "sprite_path": "sprites/weapons_image/sword/sword_r2.png"},
+    {"name": "Редкое Копьё", "protect": 10, "rarity": 2, "sprite_path": "sprites/weapons_image/spear/spear_r2.png"},
+    {"name": "Редкая Рапира", "protect": 10, "rarity": 2, "sprite_path": "sprites/weapons_image/rapier/rapier_r1.png"},
 
-    {"name": "Эпический Меч", "damage": 10, "rarity": 3, "sprite_path": "sprites/weapons_image/sword/sword_r3.png"},
-    {"name": "Эпическое Копьё", "damage": 10, "rarity": 3, "sprite_path": "sprites/weapons_image/spear/spear_r3.png"},
-    {"name": "Эпическая Рапира", "damage": 10, "rarity": 3,
+    {"name": "Эпический Меч", "protect": 10, "rarity": 3, "sprite_path": "sprites/weapons_image/sword/sword_r3.png"},
+    {"name": "Эпическое Копьё", "protect": 10, "rarity": 3, "sprite_path": "sprites/weapons_image/spear/spear_r3.png"},
+    {"name": "Эпическая Рапира", "protect": 10, "rarity": 3,
      "sprite_path": "sprites/weapons_image/rapier/rapier_r3.png"}
 ]
 
-
-class Weapon(pygame.sprite.Sprite):
-    def __init__(self, name, damage, rarity, sprite_path, *groups):
+class Armor(pygame.sprite.Sprite):
+    def __init__(self, name, protect, rarity, sprite_path, *groups):
         super().__init__(*groups)
 
         self.name = name
-        self.damage = damage
+        self.protect = protect
         self.rarity = rarity
         self.sprite_path = sprite_path
         self.bonus = 0
@@ -51,7 +49,7 @@ class Weapon(pygame.sprite.Sprite):
             self.rect = pygame.Rect(rect)
 
     def on_click(self, player):
-        print(f'Выбранно оружие: {self.name}')
+        print(f'Выбранна броня: {self.name}')
         for slot in player.inventory.slots + player.inventory.unic_slot:
             item = slot.item
             if item is not None:
@@ -74,7 +72,7 @@ class Weapon(pygame.sprite.Sprite):
             font_large = pygame.font.SysFont('Arial', 30)
 
             name = font_large.render(f"{self.name}", True, self.color_rarity[self.rarity])  # Белый текст
-            damage_text = font_medium.render(f"Урон: {self.damage}", True, (255, 255, 255))
+            damage_text = font_medium.render(f"Защита: {self.damage}", True, (255, 255, 255))
             bonus_text = font_medium.render(f"Бонус редкости: {self.bonus}", True,
                                             (255, 255, 255))
             lvl_text = font_medium.render(f"Бонус уровня: {self.lvl_bonus}", True, (255, 255, 255))
@@ -119,32 +117,4 @@ class Weapon(pygame.sprite.Sprite):
         screen.blit(self.image, slot_rect)
 
     def return_copy(self):
-        return Weapon(self.name, self.damage, self.rarity, self.sprite_path)
-
-
-def sort_weapons_by_rarity(weapons):
-    return sorted(weapons, key=lambda weapon: weapon.rarity)
-
-
-def sort_weapons_by_damage(weapons):
-    return sorted(weapons, key=lambda weapon: weapon.damage)
-
-
-def filter_weapons_by_rarity(weapons, rarity):
-    return [weapon for weapon in weapons if weapon.rarity == rarity]
-
-
-def filter_weapons_by_damage(weapons, damage):
-    return [weapon for weapon in weapons if weapon.damage == damage]
-
-
-def randomize_weapons():
-    with sqlite3.connect('database.db') as db:
-        cursor = db.cursor()
-        cursor.execute("SELECT name, damage, rarity, sprite_path FROM weapons")
-        weapons_data = cursor.fetchall()
-    return [Weapon(name=name, damage=damage, rarity=rarity, sprite_path=sprite_path) for
-            name, damage, rarity, sprite_path in weapons_data]
-
-
-result_weapon = randomize_weapons()
+        return Armor(self.name, self.protect, self.rarity, self.sprite_path)
