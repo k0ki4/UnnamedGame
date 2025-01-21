@@ -45,13 +45,14 @@ class Weapon(pygame.sprite.Sprite):
         }
 
     def equip(self, rect):
+        print(rect)
         if not self.is_equip:
             self.is_equip = True
-            self.rect = rect
+            self.rect = pygame.Rect(rect)
 
     def on_click(self, player):
         print(f'Выбранно оружие: {self.name}')
-        for slot in player.inventory.slots:
+        for slot in player.inventory.slots + player.inventory.unic_slot:
             item = slot.item
             if item is not None:
                 if item != self:
@@ -97,7 +98,10 @@ class Weapon(pygame.sprite.Sprite):
             if not self.is_equip:
                 screen.blit(button_text, text_rect)
                 screen.blit(frame_button, self.button_rect)
-
+            else:
+                button_text = font_medium.render("Снять", True, (255, 255, 255))
+                screen.blit(button_text, text_rect)
+                screen.blit(frame_button, self.button_rect)
 
 
     def get_bonus(self, bonus):

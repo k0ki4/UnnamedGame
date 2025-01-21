@@ -1,7 +1,7 @@
 import time
 import pygame
 
-from inventory_logic import Inventory
+from inventory_logic import Inventory, EquipItemSlot
 from loot.chest import LootChest
 
 
@@ -19,12 +19,10 @@ class Player(pygame.sprite.Sprite):
 
         self.default_damage = default_damage
         self.default_armor = default_armor
-        self.equip_weapon = None
-        self.armor = None
-        self.damage = None
+        self.armor = 0
+        self.damage = 0
         self.hp = hp
         self.action_count = 4
-        self.calc_stats()
 
         self.image = pygame.Surface((board.cell_size, board.cell_size))
         self.image.fill("ORANGE")
@@ -40,11 +38,15 @@ class Player(pygame.sprite.Sprite):
         self.font = pygame.font.SysFont('Arial', 15)
 
     def calc_stats(self):
-        if self.equip_weapon:
-            pass
-        else:
-            self.armor = self.default_armor
-            self.damage = self.default_damage
+        self.damage = 0
+        self.armor = 0
+        self.damage += self.default_damage
+        self.armor += self.default_armor
+        equip_weapon = [slot.item.damage for slot in self.inventory.unic_slot if
+                        slot.item is not None and isinstance(slot, EquipItemSlot)]
+
+        if equip_weapon:
+            self.damage += sum(equip_weapon)
 
     def calc_cell(self, cell, action_step):
         x, y = cell
@@ -57,6 +59,8 @@ class Player(pygame.sprite.Sprite):
         return x + action_step[0], y + action_step[1]  # Возвращаем новое положение
 
     def render_stats(self, screen):
+        self.calc_stats()
+
         stats_img = pygame.image.load('sprites/gui/gui.png').convert_alpha()
         stats_img2 = pygame.image.load('sprites/gui/gui_2.png').convert_alpha()
         stats_rect = pygame.Rect(800, 6, 400, 785)
@@ -88,7 +92,6 @@ class Player(pygame.sprite.Sprite):
         actions_text = self.font.render(f"Осталось действий: {self.action_count}", True,
                                         (255, 255, 255))
         lvl_text = self.font.render(f"Уровень: {self.lvl}", True, (255, 255, 255))
-
 
         cord_text_x = 840
         # Позиции текста

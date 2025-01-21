@@ -94,17 +94,20 @@ if __name__ == '__main__':
                 if event.button == 1 and not player.inventory.is_open:
                     board.get_cell(event.pos)
                 elif event.button == 1 and player.inventory.is_open:
-                    for slot in player.inventory.slots:
+                    for slot in player.inventory.slots + player.inventory.unic_slot:
                         item = slot.item
                         if item is not None:
                             if item.rect.collidepoint(event.pos) and item.rect.topleft[0] >= 0 and item.rect.topleft[
                                 1] >= 0:
                                 item.on_click(player)
-                            elif item.button_rect.collidepoint(event.pos) and item.rect.topleft[0] >= 0 and item.rect.topleft[
-                                1] >= 0 and item.open_stats:
+                            elif item.button_rect.collidepoint(event.pos) and item.rect.topleft[0] >= 0 and \
+                                    item.rect.topleft[
+                                        1] >= 0 and item.open_stats and not item.is_equip:
                                 player.inventory.equip_item(slot)
-
-
+                            elif item.button_rect.collidepoint(event.pos) and item.rect.topleft[0] >= 0 and \
+                                    item.rect.topleft[
+                                        1] >= 0 and item.open_stats and item.is_equip:
+                                player.inventory.un_equip_item(slot)
 
             if event.type == pygame.KEYDOWN and not player.inventory.is_open:  # Обработка нажатия клавиш
                 keys = pygame.key.get_pressed()

@@ -11,10 +11,11 @@ class InventorySlot:
 
         self.image_slot = pygame.image.load("sprites/inventory/slot.png").convert_alpha()
         self.image_slot = pygame.transform.scale(self.image_slot, (width, height))
+        self.image_slot.get_rect(topleft=(x, y))
 
     def draw(self, screen):
         # Рисуем границу ячейки
-        screen.blit(self.image_slot, (self.x, self.y))
+        screen.blit(self.image_slot, self.rect)
         if self.item:
             self.item.draw(screen, self.rect)
 
@@ -92,8 +93,7 @@ class Inventory:
             EquipItemSlot(150, 180, cell_width, cell_height),
             AccessoriesItemSlot(115, 330, cell_width, cell_height),
             AccessoriesItemSlot(175, 330, cell_width, cell_height),
-            AccessoriesItemSlot(235, 330, cell_width, cell_height),
-        ]
+            AccessoriesItemSlot(235, 330, cell_width, cell_height)]
 
         self.is_open = False  # Состояние инвентаря
 
@@ -104,6 +104,14 @@ class Inventory:
 
     def toggle(self):
         self.is_open = not self.is_open  # Переключение состояния инвентаря
+
+    def un_equip_item(self, slot):
+        slot = slot
+        item = slot.item
+        item.is_equip = False
+        item.open_stats = False
+        slot.item = None
+        self.add_item(item)
 
     def equip_item(self, slot):
         slot = slot
@@ -117,6 +125,7 @@ class Inventory:
                     print('Слот найден')
                     slot.item = None
                     search_slot.item = item
+                    search_slot.item.open_stats = False
                     item.equip(search_slot.get_rect())
 
     def add_item(self, item):
