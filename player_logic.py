@@ -1,7 +1,7 @@
 import time
 import pygame
 
-from inventory_logic import Inventory, EquipItemSlot
+from inventory_logic import Inventory, EquipItemSlot, HelmetSlot, ChestplateSlot, LeggingsSlot
 from loot.chest import LootChest
 
 
@@ -44,7 +44,10 @@ class Player(pygame.sprite.Sprite):
         self.armor += self.default_armor
         equip_weapon = [slot.item.damage for slot in self.inventory.unic_slot if
                         slot.item is not None and isinstance(slot, EquipItemSlot)]
-
+        equip_armor = [slot.item.protect for slot in self.inventory.unic_slot if slot.item is not None and
+                       isinstance(slot, (HelmetSlot, ChestplateSlot, LeggingsSlot))]
+        if equip_armor:
+            self.armor += sum(equip_armor)
         if equip_weapon:
             self.damage += sum(equip_weapon)
 
@@ -160,7 +163,7 @@ class Player(pygame.sprite.Sprite):
         for dx, dy in direction:
             nx, ny = x + dx, y + dy
             if 0 <= nx < self.board.width and 0 <= ny < self.board.height:
-                if isinstance(self.board.board[ny][nx], LootChest):
+                if self.board.board[ny][nx] != 0:
                     if self.board.board[ny][nx] not in self.radar_list:
                         self.radar_list.append(self.board.board[ny][nx])
 

@@ -1,10 +1,13 @@
 import random
 
 import pygame
-from weapons.weapon_logic import filter_weapons_by_rarity, result_weapon
+
+from armores.armor_logic import result_armor
+from weapons.weapon_logic import result_weapon
 
 
 class LootChest(pygame.sprite.Sprite):
+    all_items = result_weapon + result_armor
 
     def __init__(self, board, *groups, x, y, rarity=1):
         self.board = board
@@ -34,24 +37,24 @@ class LootChest(pygame.sprite.Sprite):
             if i == self.rarity:
                 self.image = self.sprites[i - 1]
 
-    def get_weapons_for_rarity(self):
+    def get_item_for_rarity(self):
         if self.rarity > 1:
-            new_list = filter_weapons_by_rarity(result_weapon, self.rarity) + filter_weapons_by_rarity(result_weapon,
-                                                                                                       self.rarity - 1)
+            new_list = filter_item_by_rarity(self.all_items, self.rarity) + filter_item_by_rarity(self.all_items,
+                                                                                                  self.rarity - 1)
         else:
-            new_list = filter_weapons_by_rarity(result_weapon, self.rarity)
+            new_list = filter_item_by_rarity(self.all_items, self.rarity)
 
-        item = random.choice(new_list)
-        item = item.return_copy()
-
-        return item
+        if new_list:
+            item = random.choice(new_list)
+            item = item.return_copy()
+            return item
 
     def toggle_chest(self):
         if not self.is_open:
             self.is_open = True
             self.image = pygame.transform.scale(self.open_chest, (self.board.cell_size, self.board.cell_size))
             player = self.board.get_player()
-            item = self.get_weapons_for_rarity()
+            item = self.get_item_for_rarity()
             player.inventory.add_item(item)
             print(f'Редкость: {self.rarity}')
             print('Сундук открыт')
@@ -83,7 +86,7 @@ class InfinityChest(LootChest):
     def toggle_chest(self):
         if not self.is_open and self.infinity:
             player = self.board.get_player()
-            item = self.get_weapons_for_rarity()
+            item = self.get_item_for_rarity()
             player.inventory.add_item(item)
             print(item)
 
@@ -97,3 +100,25 @@ class InfinityChest(LootChest):
                 bonus = random.randint(1, 3)
                 item.get_bonus(bonus)
                 print(f'Бонус к оружию +{bonus}')
+
+
+class ArmorChest(LootChest):
+    def __init__(self, board, *groups, x, y):
+        super().__init__(board, *groups, x=x, y=y)
+
+    def get_item_for_rarity(self):
+        if self.rarity > 1:
+            new_list = filter_item_by_rarity(result_armor, self.rarity) + filter_item_by_rarity(self.all_items,
+                                                                                                  self.rarity - 1)
+        else:
+            new_list = filter_item_by_rarity(result_armor, self.rarity)
+
+        if new_list:
+            item = random.choice(new_list)
+            item = item.return_copy()
+            return item
+
+
+
+def filter_item_by_rarity(items, rarity):
+    return [item for item in items if item.rarity == rarity]

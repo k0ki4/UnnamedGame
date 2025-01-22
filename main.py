@@ -1,8 +1,11 @@
+from armores.armor_logic import result_armor
 from check_database import check_db
 from loot.chest import InfinityChest
 from monsters.monster_logic import *
 from player_logic import *
 import pygame
+
+from weapons.weapon_logic import result_weapon
 
 
 class Board:

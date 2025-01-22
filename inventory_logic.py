@@ -130,10 +130,18 @@ class Inventory:
                     item.equip(search_slot.get_rect())
 
         elif isinstance(item, Armor):
+            slot_mapping = {
+                1: HelmetSlot,
+                2: ChestplateSlot,
+                3: LeggingsSlot
+            }
+
             for search_slot in self.unic_slot:
-                if search_slot.item is None and not isinstance(search_slot, EquipItemSlot):
-                    if item.is_equip:
-                        return
+                if item.is_equip:
+                    return
+
+                slot_class = slot_mapping.get(item.unic)
+                if slot_class and isinstance(search_slot, slot_class) and search_slot.item is None:
                     print('Слот найден')
                     slot.item = None
                     search_slot.item = item

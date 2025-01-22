@@ -1,6 +1,8 @@
 import sqlite3
 
+from armores.armor_logic import armor_list
 from weapons.weapon_logic import weapons_list
+
 
 def check_db():
     with sqlite3.connect('database.db') as db:
@@ -18,6 +20,7 @@ def check_db():
         
         CREATE TABLE IF NOT EXISTS armor (
             id INTEGER,
+            unic INTEGER,
             name TEXT,
             protect INTEGER,
             rarity INTEGER,
@@ -33,8 +36,8 @@ def check_db():
             for weapon in weapons_list:
                 cursor.execute("INSERT INTO weapons (name, damage, rarity, sprite_path) VALUES (?, ?, ?, ?)",
                                (weapon["name"], weapon["damage"], weapon["rarity"], weapon["sprite_path"]))
-        # cursor.execute("SELECT COUNT(*) FROM armor")
-        # if cursor.fetchone()[0] == 0:
-        #     for weapon in weapons_list:
-        #         cursor.execute("INSERT INTO weapons (name, damage, rarity, sprite_path) VALUES (?, ?, ?, ?)",
-        #                        (weapon["name"], weapon["damage"], weapon["rarity"], weapon["sprite_path"]))
+        cursor.execute("SELECT COUNT(*) FROM armor")
+        if cursor.fetchone()[0] == 0:
+            for armor in armor_list:
+                cursor.execute("INSERT INTO armor (name, unic, protect, rarity, sprite_path) VALUES (?, ?, ?, ?, ?)",
+                               (armor["name"], armor['unic'], armor["protect"], armor["rarity"], armor["sprite_path"]))
