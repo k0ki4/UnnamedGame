@@ -28,7 +28,7 @@ class Player(pygame.sprite.Sprite):
         self.image.fill("ORANGE")
         self.rect = self.image.get_rect()  # Получаем прямоугольник для спрайта
 
-        self.board.board[0][0] = 10
+        self.board.board[0][0] = self
         self.rect.x, self.rect.y = 0 * board.cell_size + board.left, 0 * board.cell_size + board.top
 
         self.last_move_time = 0  # Время последнего движения

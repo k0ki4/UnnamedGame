@@ -21,7 +21,7 @@ class InventorySlot:
             self.item.draw(screen, self.rect)
 
     def get_rect(self):
-        return self.size
+        return self.rect
 
 
 class HelmetSlot(InventorySlot):
@@ -130,8 +130,8 @@ class Inventory:
                     item.equip(search_slot.get_rect())
 
         elif isinstance(item, Armor):
-            for search_slot in self.slots + self.unic_slot:
-                if search_slot.item is None and isinstance(search_slot, EquipItemSlot):
+            for search_slot in self.unic_slot:
+                if search_slot.item is None and not isinstance(search_slot, EquipItemSlot):
                     if item.is_equip:
                         return
                     print('Слот найден')

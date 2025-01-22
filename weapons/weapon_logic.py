@@ -45,20 +45,16 @@ class Weapon(pygame.sprite.Sprite):
         }
 
     def equip(self, rect):
-        print(rect)
         if not self.is_equip:
             self.is_equip = True
-            self.rect = pygame.Rect(rect)
+            self.rect = rect
 
     def on_click(self, player):
-        print(f'Выбранно оружие: {self.name}')
+        print(f'Выбранно оружие: {self.name}' if not self.open_stats else "Выбор снят")
         for slot in player.inventory.slots + player.inventory.unic_slot:
-            item = slot.item
-            if item is not None:
-                if item != self:
-                    item.open_stats = False
+            if slot.item is not None and slot.item != self:
+                slot.item.open_stats = False
         self.open_stats = not self.open_stats
-        print(self.open_stats)
 
     def stats_update(self, screen):
         if self.open_stats:

@@ -1,6 +1,5 @@
 import pygame.sprite
 
-
 armor_list = [
     {"name": "Меч", "protect": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/sword/sword_r1.png"},
     {"name": "Копьё", "protect": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/spear/spear_r1.png"},
@@ -15,6 +14,7 @@ armor_list = [
     {"name": "Эпическая Рапира", "protect": 10, "rarity": 3,
      "sprite_path": "sprites/weapons_image/rapier/rapier_r3.png"}
 ]
+
 
 class Armor(pygame.sprite.Sprite):
     def __init__(self, name, protect, rarity, sprite_path, *groups):
@@ -43,20 +43,16 @@ class Armor(pygame.sprite.Sprite):
         }
 
     def equip(self, rect):
-        print(rect)
         if not self.is_equip:
             self.is_equip = True
-            self.rect = pygame.Rect(rect)
+            self.rect = rect
 
     def on_click(self, player):
-        print(f'Выбранна броня: {self.name}')
+        print(f'Выбранно оружие: {self.name}' if not self.open_stats else "Выбор снят")
         for slot in player.inventory.slots + player.inventory.unic_slot:
-            item = slot.item
-            if item is not None:
-                if item != self:
-                    item.open_stats = False
+            if slot.item is not None and slot.item != self:
+                slot.item.open_stats = False
         self.open_stats = not self.open_stats
-        print(self.open_stats)
 
     def stats_update(self, screen):
         if self.open_stats:
@@ -83,7 +79,6 @@ class Armor(pygame.sprite.Sprite):
             frame_button = pygame.image.load('./sprites/inventory/button.png').convert_alpha()
             frame_button = pygame.transform.scale(frame_button, (150, 70))
 
-
             screen.blit(frame, rect_frame)
             screen.blit(frame2, rect_frame2)
 
@@ -102,7 +97,6 @@ class Armor(pygame.sprite.Sprite):
                 text_rect = button_text.get_rect(center=self.button_rect.center)
                 screen.blit(frame_button, self.button_rect)
                 screen.blit(button_text, text_rect)
-
 
     def get_bonus(self, bonus):
         self.bonus = bonus

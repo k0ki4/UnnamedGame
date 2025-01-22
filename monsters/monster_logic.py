@@ -29,7 +29,7 @@ class Monster(pygame.sprite.Sprite):
 
     def set_rect(self, x, y):
         self.rect.x, self.rect.y = x * self.board.cell_size + self.board.left, y * self.board.cell_size + self.board.top
-        self.board.board[y][x] = 11
+        self.board.board[y][x] = self
         for i in self.board.board:
             print(i)
         print()
@@ -49,6 +49,9 @@ class Monster(pygame.sprite.Sprite):
 
     def update(self, keys):
         pass
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}'
 
 
 class Dummy(Monster):
