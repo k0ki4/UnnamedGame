@@ -1,3 +1,4 @@
+import random
 import time
 import pygame
 
@@ -16,6 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.radar_img = None
 
         self.lvl = 1
+        self.xp = 0
 
         self.default_damage = default_damage
         self.default_armor = default_armor
@@ -31,11 +33,19 @@ class Player(pygame.sprite.Sprite):
         self.board.board[0][0] = self
         self.rect.x, self.rect.y = 0 * board.cell_size + board.left, 0 * board.cell_size + board.top
 
+        self.fight_mode = False
+
         self.last_move_time = 0  # Время последнего движения
-        self.move_delay = 0.2  # Задержка в секундах
+        self.move_delay = 0.1  # Задержка в секундах
 
         pygame.font.init()
         self.font = pygame.font.SysFont('Arial', 15)
+
+    def get_xp(self, count):
+        self.xp += count
+        if self.xp >= 10:
+            self.xp -= 10
+            self.lvl += 1
 
     def calc_stats(self):
         self.damage = 0
@@ -50,6 +60,7 @@ class Player(pygame.sprite.Sprite):
             self.armor += sum(equip_armor)
         if equip_weapon:
             self.damage += sum(equip_weapon)
+        self.damage += self.lvl
 
     def calc_cell(self, cell, action_step):
         x, y = cell
@@ -76,12 +87,26 @@ class Player(pygame.sprite.Sprite):
 
         take_img = pygame.image.load("sprites/take.png").convert_alpha()
         take_img = pygame.transform.scale(take_img, (60, 60))
-        take_img_rect = pygame.Rect(850, 500, 57, 57)
+        take_img_rect = pygame.Rect(845, 500, 60, 60)
         screen.blit(take_img, take_img_rect)
+
+        start_fight = pygame.image.load("sprites/take.png").convert_alpha()
+        start_fight = pygame.transform.scale(start_fight, (60, 60))
+        start_fight_rect = pygame.Rect(845, 600, 60, 60)
+        screen.blit(start_fight, start_fight_rect)
+
+        start_fight_text = self.font.render("Провести атаку", True, (255, 255, 255))  # Белый текст
+        start_fight_text_2 = self.font.render("R", True, (255, 255, 255))  # Белый текст
+        screen.blit(start_fight_text, (830, 580))
+
+        text_width, text_height = start_fight_text_2.get_size()
+        text_x = start_fight_rect.x + (start_fight_rect.width - text_width) // 2
+        text_y = start_fight_rect.y + (start_fight_rect.height - text_height) // 2
+        screen.blit(start_fight_text_2, (text_x, text_y))
 
         take_text_take = self.font.render("Взаимодействовать", True, (255, 255, 255))  # Белый текст
         take_text = self.font.render("E", True, (255, 255, 255))  # Белый текст
-        screen.blit(take_text_take, (815, 470))
+        screen.blit(take_text_take, (820, 470))
         if self.radar_list:
             text_width, text_height = take_text.get_size()
             text_x = take_img_rect.x + (take_img_rect.width - text_width) // 2
@@ -106,7 +131,14 @@ class Player(pygame.sprite.Sprite):
 
         self.count_usage()
 
-    def update(self, keys):
+    def update(self, keys, screen):
+        if keys[pygame.K_r]:
+            self.fight_mode = not self.fight_mode
+
+        if self.fight_mode:
+            self.fight(screen)
+            return
+
         current_time = time.time()
         if current_time - self.last_move_time >= self.move_delay:
             if keys[pygame.K_w]:
@@ -138,7 +170,6 @@ class Player(pygame.sprite.Sprite):
                     for i in self.radar_list:
                         if isinstance(i, LootChest):
                             i.toggle_chest()
-                pass
             self.last_move_time = current_time
             self.radar_list = []
 
@@ -151,6 +182,12 @@ class Player(pygame.sprite.Sprite):
         if 0 <= cell_x <= self.board.width and 0 <= cell_y <= self.board.height:
             return cell_x, cell_y
         return None
+
+    def get_cords(self, x, y):
+        cord_x, cord_y = (x * self.board.cell_size + self.board.left,
+                          y * self.board.cell_size + self.board.top)
+
+        return cord_x, cord_y
 
     def count_usage(self):
         x, y = self.get_cell((self.rect.x, self.rect.y))
@@ -167,5 +204,37 @@ class Player(pygame.sprite.Sprite):
                     if self.board.board[ny][nx] not in self.radar_list:
                         self.radar_list.append(self.board.board[ny][nx])
 
+    def fight_cell(self, screen):
+        num = random.randint(-3, 3)
+        image = pygame.Surface((self.board.cell_size - 10 + num,
+                                self.board.cell_size - 10 + num))
+        image.fill("GRAY")
+        rect = image.get_rect()
+
+        x, y = self.get_cell((self.rect.x, self.rect.y))
+        direction = [
+            (-1, -1),
+            (-1, 0),  # вверх
+            (-1, 1),
+            (1, 0),  # вниз
+            (1, -1),
+            (1, 1),
+            (0, -1),  # влево
+            (0, 1)  # вправо
+        ]
+        for dx, dy in direction:
+            nx, ny = x + dx, y + dy
+            rect.x, rect.y = self.get_cords(nx, ny)
+            rect.x, rect.y = 5, 5
+            print(rect)
+            screen.blit(image, rect)
+            if 0 <= nx < self.board.width and 0 <= ny < self.board.height:
+                if self.board.board[ny][nx] != 0:
+                    if self.board.board[ny][nx] not in self.radar_list:
+                        self.radar_list.append(self.board.board[ny][nx])
+
+    def fight(self, screen):
+        pass
+
     def __repr__(self):
-        return 'player'
+        return f'{self.__class__.__name__}'

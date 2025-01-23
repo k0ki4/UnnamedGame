@@ -98,6 +98,9 @@ class Inventory:
 
         self.is_open = False  # Состояние инвентаря
 
+        pygame.font.init()
+        self.font = pygame.font.SysFont('Arial', 20)
+
         self.background_image = pygame.image.load("sprites/inventory/background.png").convert_alpha()
         self.background_image = pygame.transform.scale(self.background_image, (self.width, self.height))
         self.background_frame = pygame.image.load("sprites/gui/gui_2.png.").convert_alpha()
@@ -156,7 +159,7 @@ class Inventory:
                 return True
         return False
 
-    def draw(self, screen):
+    def draw(self, screen, player):
         if self.is_open:
             # Рисуем фон инвентаря
             screen.blit(self.background_image, (self.x, self.y))  # Отображаем фон на экране
@@ -167,3 +170,8 @@ class Inventory:
                 slot.draw(screen)
             for slot in self.unic_slot:
                 slot.draw(screen)
+
+            xp = player.xp
+            text_xp = self.font.render(f"XP: {xp}/10", True, (0, 255, 255))
+            text_rect = pygame.Rect((120, 290, 10, 10))
+            screen.blit(text_xp, text_rect)

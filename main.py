@@ -1,4 +1,3 @@
-from armores.armor_logic import result_armor
 from check_database import check_db
 from loot.chest import InfinityChest
 from monsters.monster_logic import *
@@ -109,13 +108,18 @@ if __name__ == '__main__':
 
             if event.type == pygame.KEYDOWN and not player.inventory.is_open:  # Обработка нажатия клавиш
                 keys = pygame.key.get_pressed()
-                player.update(keys)
+                player.update(keys, screen)
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_i:  # Открытие инвентаря по нажатию клавиши 'I'
                     player.open_inventory()
         screen.fill((0, 0, 0))
         board.render(screen)
+
+        if player.fight_mode:
+            player.fight_cell(screen)
+
+
         screen.blit(player.image, player.rect)
         screen.blit(monster.image, monster.rect)
         screen.blit(loot.image, loot.rect)
@@ -123,7 +127,7 @@ if __name__ == '__main__':
         screen.blit(infinity_chest.image, infinity_chest.rect)
 
         player.render_stats(screen)  # Рендерим статистику игрока
-        player.inventory.draw(screen)
+        player.inventory.draw(screen, player)
 
         if player.inventory.is_open:
             for slot in player.inventory.slots + player.inventory.unic_slot:
