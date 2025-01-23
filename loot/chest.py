@@ -33,7 +33,7 @@ class LootChest(pygame.sprite.Sprite):
         self.is_open = False
 
     def get_image_by_rarity(self):
-        for i in range(1, 5):
+        for i in range(1, 4):
             if i == self.rarity:
                 self.image = self.sprites[i - 1]
 
@@ -55,7 +55,6 @@ class LootChest(pygame.sprite.Sprite):
             self.image = pygame.transform.scale(self.open_chest, (self.board.cell_size, self.board.cell_size))
             player = self.board.get_player()
             item = self.get_item_for_rarity()
-            player.inventory.add_item(item)
             print(f'Редкость: {self.rarity}')
             print('Сундук открыт')
             print(f'Редкость предмета: {item.rarity}')
@@ -63,6 +62,10 @@ class LootChest(pygame.sprite.Sprite):
                 bonus = random.randint(1, 5)
                 item.get_bonus(bonus)
                 print(f'Бонус к оружию +{bonus}')
+                item.get_lvl_bonus(player.lvl)
+                print(f'Бонус от лвл-а {player.lvl}')
+            player.inventory.add_item(item)
+
         else:
             print('Сундук уже открыт')
 
@@ -87,7 +90,6 @@ class InfinityChest(LootChest):
         if not self.is_open and self.infinity:
             player = self.board.get_player()
             item = self.get_item_for_rarity()
-            player.inventory.add_item(item)
             print(item)
 
             print(f'Редкость: {self.rarity}')
@@ -96,10 +98,11 @@ class InfinityChest(LootChest):
             if self.rarity > item.rarity:
                 bonus = random.randint(1, 5)
                 item.get_bonus(bonus)
-            else:
-                bonus = random.randint(1, 3)
-                item.get_bonus(bonus)
                 print(f'Бонус к оружию +{bonus}')
+                item.get_lvl_bonus(player.lvl)
+                print(f'Бонус от лвл-а {player.lvl}')
+            player.inventory.add_item(item)
+
 
 
 class ArmorChest(LootChest):

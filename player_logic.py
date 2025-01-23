@@ -225,9 +225,10 @@ class Player(pygame.sprite.Sprite):
         for dx, dy in direction:
             nx, ny = x + dx, y + dy
             rect.x, rect.y = self.get_cords(nx, ny)
-            rect.x, rect.y = 5, 5
-            print(rect)
-            screen.blit(image, rect)
+            rect.x += 5 - num // 2
+            rect.y += 5 - num // 2
+            if 0 <= nx < self.board.width and 0 <= ny < self.board.height:
+                screen.blit(image, rect)
             if 0 <= nx < self.board.width and 0 <= ny < self.board.height:
                 if self.board.board[ny][nx] != 0:
                     if self.board.board[ny][nx] not in self.radar_list:

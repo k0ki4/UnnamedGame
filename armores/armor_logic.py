@@ -114,6 +114,10 @@ class Armor(pygame.sprite.Sprite):
         self.bonus = bonus
         self.protect += bonus
 
+    def get_lvl_bonus(self, bonus):
+        self.lvl_bonus = bonus
+        self.protect += bonus
+
     def set_rect(self, rect):
         self.rect = rect
 

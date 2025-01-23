@@ -106,6 +106,10 @@ class Weapon(pygame.sprite.Sprite):
         self.bonus = bonus
         self.damage += bonus
 
+    def get_lvl_bonus(self, bonus):
+        self.lvl_bonus = bonus
+        self.damage += bonus
+
     def set_rect(self, rect):
         self.rect = rect
 

@@ -4,8 +4,6 @@ from monsters.monster_logic import *
 from player_logic import *
 import pygame
 
-from weapons.weapon_logic import result_weapon
-
 
 class Board:
     def __init__(self, width, height, padding=10):
