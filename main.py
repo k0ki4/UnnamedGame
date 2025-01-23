@@ -52,7 +52,11 @@ class Board:
         print(mouse_pos)
         cell_x = (mouse_pos[0] - self.left) // self.cell_size
         cell_y = (mouse_pos[1] - self.top) // self.cell_size
-        if (0 <= cell_x <= self.width and 0 <= cell_y <= self.height):
+        if 0 <= cell_x <= self.width and 0 <= cell_y <= self.height:
+            if player.fight_mode and isinstance(self.board[cell_y][cell_x], (Monster,)) and self.board[cell_y][
+                cell_x] in player.radar_list:
+                player.get_damage(self.board[cell_y][cell_x])
+
             print(cell_x, cell_y)
             return cell_x, cell_y
         return None
@@ -80,7 +84,10 @@ if __name__ == '__main__':
     pygame.display.set_caption("Unnamed Game")
     board = Board(10, 10)
     player = Player(board)
-    monster = Dummy(board, 3, 3, hp=100, default_damage=0)
+    monsters_group = pygame.sprite.Group()
+    monster = Dummy(board, 3, 3, hp=100, default_damage=0,
+                    sheet=pygame.image.load('./sprites/monsters_sp/dummy_sp/dummy_spritesheet.png'),
+                    columns=3, rows=1)
     loot = LootChest(board, x=3, y=4, rarity=2)
     loot2 = LootChest(board, x=4, y=5, rarity=3)
     infinity_chest = InfinityChest(board, x=2, y=2, rarity=3)
@@ -117,9 +124,10 @@ if __name__ == '__main__':
         if player.fight_mode:
             player.fight_cell(screen)
 
-
         screen.blit(player.image, player.rect)
         screen.blit(monster.image, monster.rect)
+        if monster.damaged:
+            monster.update(screen)
         screen.blit(loot.image, loot.rect)
         screen.blit(loot2.image, loot2.rect)
         screen.blit(infinity_chest.image, infinity_chest.rect)
