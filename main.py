@@ -85,9 +85,11 @@ if __name__ == '__main__':
     board = Board(10, 10)
     player = Player(board)
     monsters_group = pygame.sprite.Group()
+    all_monster = []
     monster = Dummy(board, 3, 3, hp=100, default_damage=0,
                     sheet=pygame.image.load('./sprites/monsters_sp/dummy_sp/dummy_spritesheet.png'),
                     columns=3, rows=1)
+    all_monster.append(monster)
     loot = LootChest(board, x=3, y=4, rarity=2)
     loot2 = LootChest(board, x=4, y=5, rarity=3)
     infinity_chest = InfinityChest(board, x=2, y=2, rarity=3)
@@ -131,6 +133,11 @@ if __name__ == '__main__':
         screen.blit(loot.image, loot.rect)
         screen.blit(loot2.image, loot2.rect)
         screen.blit(infinity_chest.image, infinity_chest.rect)
+
+
+        for i in all_monster:
+            i.render_stats(screen)
+
 
         player.render_stats(screen)  # Рендерим статистику игрока
         player.inventory.draw(screen, player)

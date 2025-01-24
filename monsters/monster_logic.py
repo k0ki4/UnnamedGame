@@ -13,6 +13,8 @@ class Monster(pygame.sprite.Sprite):
         self.weapon = None
         self.armor = None
         self.damage = None
+
+        self.first_hp = hp
         self.hp = hp
         self.calc_stats()
 
@@ -27,7 +29,7 @@ class Monster(pygame.sprite.Sprite):
         self.move_delay = 0.5  # Задержка в секундах
 
         pygame.font.init()
-        self.font = pygame.font.SysFont('Arial', 15)
+        self.font = pygame.font.SysFont('Arial', 13)
 
 
     def set_rect(self, x, y):
@@ -49,7 +51,51 @@ class Monster(pygame.sprite.Sprite):
         pass
 
     def render_stats(self, screen):
-        pass
+        # Создаем черный фон для отображения HP
+        image = pygame.Surface((150, 20))
+        image.fill("BLACK")
+
+        # Вычисляем процент оставшегося здоровья
+        health_percentage = self.hp / self.first_hp
+        hp_width = int(140 * health_percentage)  # Ширина красного HP в зависимости от оставшегося здоровья
+
+        # Создаем красный прямоугольник для HP
+        hp_image = pygame.Surface((hp_width, 10))
+        hp_image.fill('RED')
+
+        # Отображение текста HP
+        hp_text = self.font.render(f'HP: {self.hp}/{self.first_hp}', True, (255, 255, 255))
+
+        # Центрируем элементы на экране
+        center_x = self.rect.centerx - 53
+        center_y = self.rect.centery - 35
+
+        image_rect = pygame.Rect((center_x, center_y, 150, 20))
+        hp_image_rect = pygame.Rect((center_x + 5,
+                                     center_y + 5, hp_width, 10))  # Используем hp_width для высоты
+        text_width, text_height = hp_text.get_size()
+        text_x = image_rect.x + (image_rect.width - text_width) // 2
+        text_y = image_rect.y + (image_rect.height - text_height) // 2
+
+        # Рисуем элементы на экране
+        screen.blit(image, image_rect)
+        screen.blit(hp_image, hp_image_rect)
+        screen.blit(hp_text, (text_x, text_y))
+
+    def get_damage(self, enemy):
+        self.hp -= enemy.damage
+        if self.hp <= 0:
+            self.dead()
+
+    def dead(self):
+        self.kill()
+        for x in range(self.board.board):
+            for y in range(x):
+                if self.board.board[x][y] == self:
+                    self.board.board[x][y] = 0
+                    print('Монстр убит')
+                    return True
+
 
     def update(self, keys):
         pass
@@ -87,7 +133,12 @@ class Dummy(Monster):
                 self.frames.append(scaled_frame)
 
 
-    def get_damage(self):
+    def get_damage(self, enemy):
+        self.hp -= enemy.damage
+        if self.hp <= 0:
+            self.dead()
+            return
+
         if not self.damaged:  # Если не в состоянии получения урона
             self.damaged = True  # Устанавливаем флаг получения урона
             self.damage_start_time = pygame.time.get_ticks()  # Запоминаем время начала анимации

@@ -263,7 +263,7 @@ class Player(pygame.sprite.Sprite):
         self.last_fight_render_time = current_time
 
     def get_damage(self, enemy):
-        enemy.get_damage()
+        enemy.get_damage(self)
         print('Урон нанесён')
 
     def __repr__(self):
