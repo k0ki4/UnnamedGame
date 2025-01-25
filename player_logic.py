@@ -26,6 +26,7 @@ class Player(pygame.sprite.Sprite):
         self.armor = 0
         self.damage = 0
         self.hp = hp
+        self.action_const = 4
         self.action_count = 4
 
         self.image = pygame.Surface((board.cell_size, board.cell_size))
@@ -47,6 +48,8 @@ class Player(pygame.sprite.Sprite):
 
         pygame.font.init()
         self.font = pygame.font.SysFont('Arial', 15)
+
+        self.is_dead = False
 
     def get_xp(self, count):
         self.xp += count
@@ -143,7 +146,7 @@ class Player(pygame.sprite.Sprite):
             self.fight_mode = not self.fight_mode
 
         current_time = time.time()
-        if current_time - self.last_move_time >= self.move_delay and not self.fight_mode:
+        if current_time - self.last_move_time >= self.move_delay and not self.fight_mode and self.action_count:
             if keys[pygame.K_w]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (0, -1))
@@ -172,8 +175,13 @@ class Player(pygame.sprite.Sprite):
                 if self.radar_list:
                     for i in self.radar_list:
                         if isinstance(i, LootChest):
-                            i.toggle_chest()
+                            i.toggle_chest(self)
+            if keys[pygame.K_q]:
+                for i in self.board.board:
+                    print(i)
+                print()
             self.last_move_time = current_time
+            self.action_count -= 1
             self.radar_list = []
 
     def open_inventory(self):
@@ -265,6 +273,21 @@ class Player(pygame.sprite.Sprite):
     def get_damage(self, enemy):
         enemy.get_damage(self)
         print('Урон нанесён')
+
+    def taking_damage(self, damage):
+        if damage <= self.armor:
+            self.hp -= 1
+        else:
+            self.hp -= damage
+        if self.hp <= 0:
+            self.dead_player()
+
+    def dead_player(self):
+        print('Смерть')
+        exit()
+
+    def get_self(self):
+        return self.__class__
 
     def __repr__(self):
         return f'{self.__class__.__name__}'

@@ -89,13 +89,21 @@ if __name__ == '__main__':
     monster = Dummy(board, 3, 3, hp=100, default_damage=0,
                     sheet=pygame.image.load('./sprites/monsters_sp/dummy_sp/dummy_spritesheet.png'),
                     columns=3, rows=1)
+    slime = Slime(board, x=8, y=8)
     all_monster.append(monster)
+    all_monster.append(slime)
+
     loot = LootChest(board, x=3, y=4, rarity=2)
     loot2 = LootChest(board, x=4, y=5, rarity=3)
     infinity_chest = InfinityChest(board, x=2, y=2, rarity=3)
     running = True
 
     while running:
+        all_monster = [monster for monster in all_monster if not monster.is_dead]
+        if player.action_count == 0:
+            [i.attack_damage(player) for i in all_monster]
+            player.action_count = player.action_const
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -127,17 +135,17 @@ if __name__ == '__main__':
             player.fight_cell(screen)
 
         screen.blit(player.image, player.rect)
-        screen.blit(monster.image, monster.rect)
-        if monster.damaged:
-            monster.update(screen)
         screen.blit(loot.image, loot.rect)
         screen.blit(loot2.image, loot2.rect)
         screen.blit(infinity_chest.image, infinity_chest.rect)
 
-
-        for i in all_monster:
-            i.render_stats(screen)
-
+        if all_monster:
+            for i in all_monster:
+                i.update(screen)
+            for i in all_monster:
+                if not i.is_dead:
+                    screen.blit(i.image, i.rect)
+                    i.render_stats(screen)
 
         player.render_stats(screen)  # Рендерим статистику игрока
         player.inventory.draw(screen, player)
@@ -147,6 +155,8 @@ if __name__ == '__main__':
                 item = slot.item
                 if item is not None:
                     item.stats_update(screen)
+
+        all_monster = [monster for monster in all_monster if not monster.is_dead]
 
         pygame.display.flip()
 

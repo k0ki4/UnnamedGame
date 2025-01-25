@@ -49,11 +49,10 @@ class LootChest(pygame.sprite.Sprite):
             item = item.return_copy()
             return item
 
-    def toggle_chest(self):
+    def toggle_chest(self, player):
         if not self.is_open:
             self.is_open = True
             self.image = pygame.transform.scale(self.open_chest, (self.board.cell_size, self.board.cell_size))
-            player = self.board.get_player()
             item = self.get_item_for_rarity()
             print(f'Редкость: {self.rarity}')
             print('Сундук открыт')
@@ -72,9 +71,6 @@ class LootChest(pygame.sprite.Sprite):
     def set_rect(self, x, y):
         self.rect.x, self.rect.y = x * self.board.cell_size + self.board.left, y * self.board.cell_size + self.board.top
         self.board.board[y][x] = self
-        for i in self.board.board:
-            print(i)
-        print()
 
     def __repr__(self):
         return f'Chest: {self.rarity}'
@@ -86,9 +82,8 @@ class InfinityChest(LootChest):
 
         self.infinity = True
 
-    def toggle_chest(self):
+    def toggle_chest(self, player):
         if not self.is_open and self.infinity:
-            player = self.board.get_player()
             item = self.get_item_for_rarity()
             print(item)
 
