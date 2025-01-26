@@ -86,7 +86,7 @@ if __name__ == '__main__':
     player = Player(board)
     monsters_group = pygame.sprite.Group()
     all_monster = []
-    monster = Dummy(board, 3, 3, hp=100, default_damage=0,
+    monster = Dummy(board, 2, 3, hp=100, default_damage=0,
                     sheet=pygame.image.load('./sprites/monsters_sp/dummy_sp/dummy_spritesheet.png'),
                     columns=3, rows=1)
     slime = Slime(board, x=8, y=8)

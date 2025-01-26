@@ -59,47 +59,48 @@ class Monster(pygame.sprite.Sprite):
         self.id = monster_id
         print(monster_id)
 
-    def is_valid_move(self, grid, visited, x, y):
-        return (0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] == 0 and not visited[x][y] and
-                grid[x][y] == 0)
+    def is_valid(self, y, x, player):
+        # Проверяем, находится ли клетка в пределах поля
+        if not (0 <= y < self.board.height and 0 <= x < self.board.width):
+            return False
 
-    def wave_algorithm(self, grid, start, goal):
+        # Проверяем, является ли клетка проходимой (равна 0) или это клетка с игроком
+        return self.board.board[y][x] == 0 or isinstance(self.board.board[y][x], type(player))
+
+    def find_shortest_path(self, start, end, player):
+
+        import heapq
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        # Инициализация
+        distances = [[float('inf')] * self.board.width for _ in range(self.board.height)]
+        distances[start[0]][start[1]] = 0
+        priority_queue = [(0, start)]  # (расстояние, координаты)
 
-        rows, cols = len(grid), len(grid[0])
-        visited = [[False for _ in range(cols)] for _ in range(rows)]
-        parent = [[None for _ in range(cols)] for _ in range(rows)]
+        while priority_queue:
+            current_distance, current_node = heapq.heappop(priority_queue)
+            current_y, current_x = current_node
 
-        queue = [start]
-        visited[start[0]][start[1]] = True
+            print(f"Текущая клетка: {(current_y, current_x)}, расстояние: {current_distance}")
 
-        while queue:
-            current = queue.pop(0)
+            if current_node == end:
+                return distances[end[0]][end[1]]
 
-            if current == goal:
-                break
+            if current_distance > distances[current_y][current_x]:
+                continue
 
             for direction in directions:
-                neighbor_x = current[0] + direction[0]
-                neighbor_y = current[1] + direction[1]
+                neighbor_y = current_y + direction[0]
+                neighbor_x = current_x + direction[1]
 
-                if self.is_valid_move(grid, visited, neighbor_x, neighbor_y):
-                    visited[neighbor_x][neighbor_y] = True
-                    parent[neighbor_x][neighbor_y] = current
-                    queue.append((neighbor_x, neighbor_y))
+                if self.is_valid(neighbor_y, neighbor_x, player):
+                    new_distance = current_distance + 1
 
-        path = []
-        if parent[goal[0]][goal[1]] is not None:
-            step = goal
-            while step is not None:
-                path.append(step)
-                step = parent[step[0]][step[1]]
-            path.reverse()
-
-        if path:
-            return path[-1]
-        else:
-            return None
+                    if new_distance < distances[neighbor_y][neighbor_x]:
+                        distances[neighbor_y][neighbor_x] = new_distance
+                        heapq.heappush(priority_queue, (new_distance, (neighbor_y, neighbor_x)))
+                        print(f"Добавлено в очередь: {(neighbor_y, neighbor_x)} с расстоянием {new_distance}")
+        print("#" * 10)
+        return float('inf')  # Если путь не найден
 
     def set_rect(self, x, y):
         self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
@@ -110,6 +111,46 @@ class Monster(pygame.sprite.Sprite):
                     if self.board.board[j][i].id == self.id:
                         self.board.board[j][i] = 0
         self.board.board[y][x] = self
+
+    def fight_cell(self, player):
+        x, y = self.board.get_cell((self.rect.x, self.rect.y))
+        direction = [
+            (-1, -1),
+            (-1, 0),  # вверх
+            (-1, 1),
+            (1, 0),  # вниз
+            (1, -1),
+            (1, 1),
+            (0, -1),  # влево
+            (0, 1)  # вправо
+        ]
+
+        for dx, dy in direction:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.board.width and 0 <= ny < self.board.height:
+                if isinstance(self.board.board[ny][nx], player.get_self()):
+                    return True
+        return False
+
+    def attack_damage(self, player):
+        search_close_player = self.fight_cell(player)
+
+        if search_close_player:
+            player.taking_damage(self.damage)
+        else:
+            x, y = self.board.get_cell((self.rect.x, self.rect.y))
+            player_x, player_y = self.board.get_cell((player.rect.x, player.rect.y))
+            print(y, x)
+            print(player_y, player_x)
+            path_to_player = self.find_shortest_path((y, x), (player_y, player_x), player)
+            print(1111, path_to_player)
+            print(f"Текущая позиция монстра: {(y, x)}, Позиция игрока: {(player_y, player_x)}")
+            print(f"Найденный путь: {path_to_player}")
+            print("Monster", {self.__repr__()})
+
+            # if path_to_player:
+            #     x, y = path_to_player[1]
+            #     self.set_rect(x, y)
 
     def calc_stats(self):
         if self.weapon:
@@ -172,46 +213,6 @@ class Monster(pygame.sprite.Sprite):
 
     def update(self, keys):
         pass
-
-    def fight_cell(self, player):
-        x, y = self.board.get_cell((self.rect.x, self.rect.y))
-        direction = [
-            (-1, -1),
-            (-1, 0),  # вверх
-            (-1, 1),
-            (1, 0),  # вниз
-            (1, -1),
-            (1, 1),
-            (0, -1),  # влево
-            (0, 1)  # вправо
-        ]
-
-        for dx, dy in direction:
-            nx, ny = x + dx, y + dy
-            if 0 <= nx < self.board.width and 0 <= ny < self.board.height:
-                if isinstance(self.board.board[ny][nx], player.get_self()):
-                    return True
-        return False
-
-    def attack_damage(self, player):
-        search_close_player = self.fight_cell(player)
-
-        if search_close_player:
-            player.taking_damage(self.damage)
-        else:
-            x, y = self.board.get_cell((self.rect.x, self.rect.y))
-            player_x, player_y = self.board.get_cell((player.rect.x, player.rect.y))
-            # x, y = y, x
-            # player_x, player_y = player_y, player_y
-            path = self.wave_algorithm(self.board.board, (x, y), (player_x, player_y))
-            print(1111, path)
-            print(f"Текущая позиция монстра: {(x, y)}, Позиция игрока: {(player_x, player_y)}")
-            print(f"Найденный путь: {path}")
-            if path is None:
-                print('Путь не найден')
-                return
-
-            self.set_rect(path[0], path[1])
 
     def __repr__(self):
         return f'{self.__class__.__name__}'
