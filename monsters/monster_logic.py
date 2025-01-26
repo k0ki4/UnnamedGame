@@ -68,13 +68,13 @@ class Monster(pygame.sprite.Sprite):
         return self.board.board[y][x] == 0 or isinstance(self.board.board[y][x], type(player))
 
     def find_shortest_path(self, start, end, player):
-
         import heapq
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
         # Инициализация
         distances = [[float('inf')] * self.board.width for _ in range(self.board.height)]
         distances[start[0]][start[1]] = 0
         priority_queue = [(0, start)]  # (расстояние, координаты)
+        predecessors = [[None] * self.board.width for _ in range(self.board.height)]  # Предшественники
 
         while priority_queue:
             current_distance, current_node = heapq.heappop(priority_queue)
@@ -83,7 +83,13 @@ class Monster(pygame.sprite.Sprite):
             print(f"Текущая клетка: {(current_y, current_x)}, расстояние: {current_distance}")
 
             if current_node == end:
-                return distances[end[0]][end[1]]
+                # Восстанавливаем путь
+                path = []
+                while current_node is not None:
+                    path.append(current_node)
+                    current_node = predecessors[current_node[0]][current_node[1]]
+                path.reverse()
+                return path
 
             if current_distance > distances[current_y][current_x]:
                 continue
@@ -97,10 +103,12 @@ class Monster(pygame.sprite.Sprite):
 
                     if new_distance < distances[neighbor_y][neighbor_x]:
                         distances[neighbor_y][neighbor_x] = new_distance
+                        predecessors[neighbor_y][neighbor_x] = (current_y, current_x)  # Запоминаем предшественника
                         heapq.heappush(priority_queue, (new_distance, (neighbor_y, neighbor_x)))
                         print(f"Добавлено в очередь: {(neighbor_y, neighbor_x)} с расстоянием {new_distance}")
+
         print("#" * 10)
-        return float('inf')  # Если путь не найден
+        return []  # Если путь не найден, возвращаем пустой список
 
     def set_rect(self, x, y):
         self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
@@ -148,9 +156,9 @@ class Monster(pygame.sprite.Sprite):
             print(f"Найденный путь: {path_to_player}")
             print("Monster", {self.__repr__()})
 
-            # if path_to_player:
-            #     x, y = path_to_player[1]
-            #     self.set_rect(x, y)
+            if path_to_player:
+                x, y = path_to_player[1]
+                self.set_rect(y, x)
 
     def calc_stats(self):
         if self.weapon:
