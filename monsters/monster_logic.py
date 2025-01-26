@@ -1,4 +1,5 @@
 import os
+import random
 
 import pygame
 
@@ -80,7 +81,7 @@ class Monster(pygame.sprite.Sprite):
             current_distance, current_node = heapq.heappop(priority_queue)
             current_y, current_x = current_node
 
-            print(f"Текущая клетка: {(current_y, current_x)}, расстояние: {current_distance}")
+            # print(f"Текущая клетка: {(current_y, current_x)}, расстояние: {current_distance}")
 
             if current_node == end:
                 # Восстанавливаем путь
@@ -105,9 +106,9 @@ class Monster(pygame.sprite.Sprite):
                         distances[neighbor_y][neighbor_x] = new_distance
                         predecessors[neighbor_y][neighbor_x] = (current_y, current_x)  # Запоминаем предшественника
                         heapq.heappush(priority_queue, (new_distance, (neighbor_y, neighbor_x)))
-                        print(f"Добавлено в очередь: {(neighbor_y, neighbor_x)} с расстоянием {new_distance}")
+                        # print(f"Добавлено в очередь: {(neighbor_y, neighbor_x)} с расстоянием {new_distance}")
 
-        print("#" * 10)
+        # print("#" * 10)
         return []  # Если путь не найден, возвращаем пустой список
 
     def set_rect(self, x, y):
@@ -140,11 +141,27 @@ class Monster(pygame.sprite.Sprite):
                     return True
         return False
 
-    def attack_damage(self, player):
+    def attack_damage(self, player, random_move_chance=0.5):
         search_close_player = self.fight_cell(player)
 
         if search_close_player:
             player.taking_damage(self.damage)
+        elif random.random() < random_move_chance:
+            print('#' * 10)
+            directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Вверх, вниз, влево, вправо
+            random.shuffle(directions)  # Перемешиваем направления для случайного выбора
+
+            for direction in directions:
+                x, y = self.board.get_cell((self.rect.x, self.rect.y))
+                print('Старая позиция', y, x)
+                new_y = y + direction[0]
+                new_x = x + direction[1]
+                # Проверяем границы и проходимость клетки
+                if 0 <= new_y < self.board.height and 0 <= new_x < self.board.width:
+                    if self.board.board[new_y][new_x] == 0:  # Проверяем, что клетка проходимая
+                        self.set_rect(new_x, new_y)  # Перемещаемся
+                        print(f"Монстр переместился в случайную клетку: {(new_y, new_x)}")
+                        return True
         else:
             x, y = self.board.get_cell((self.rect.x, self.rect.y))
             player_x, player_y = self.board.get_cell((player.rect.x, player.rect.y))
@@ -234,6 +251,9 @@ class Dummy(Monster):
         self.cut_sheet(sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
+
+    def attack_damage(self, player):
+        pass
 
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(self.rect.x, self.rect.y, sheet.get_width() // columns,

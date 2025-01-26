@@ -80,6 +80,7 @@ class Player(pygame.sprite.Sprite):
         if self.board.board[y + action_step[1]][x + action_step[0]] != 0:
             return x, y
         self.board.board[y][x] = 0
+        self.action_count -= 1
         return x + action_step[0], y + action_step[1]  # Возвращаем новое положение
 
     def render_stats(self, screen):
@@ -144,6 +145,7 @@ class Player(pygame.sprite.Sprite):
     def update(self, keys, screen):
         if keys[pygame.K_r]:
             self.fight_mode = not self.fight_mode
+            return
 
         current_time = time.time()
         if current_time - self.last_move_time >= self.move_delay and not self.fight_mode and self.action_count:
@@ -181,7 +183,6 @@ class Player(pygame.sprite.Sprite):
                     print(i)
                 print()
             self.last_move_time = current_time
-            self.action_count -= 1
             self.radar_list = []
 
     def open_inventory(self):
@@ -273,6 +274,7 @@ class Player(pygame.sprite.Sprite):
     def get_damage(self, enemy):
         enemy.get_damage(self)
         print('Урон нанесён')
+        self.action_count -= 1
 
     def taking_damage(self, damage):
         if damage <= self.armor:

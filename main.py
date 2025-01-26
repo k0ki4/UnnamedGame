@@ -49,7 +49,6 @@ class Board:
                 )
 
     def get_cell(self, mouse_pos):
-        print(mouse_pos)
         cell_x = (mouse_pos[0] - self.left) // self.cell_size
         cell_y = (mouse_pos[1] - self.top) // self.cell_size
         if 0 <= cell_x <= self.width and 0 <= cell_y <= self.height:
@@ -57,7 +56,6 @@ class Board:
                 cell_x] in player.radar_list:
                 player.get_damage(self.board[cell_y][cell_x])
 
-            print(cell_x, cell_y)
             return cell_x, cell_y
         return None
 
@@ -121,7 +119,7 @@ if __name__ == '__main__':
                             elif item.button_rect.collidepoint(event.pos) and item.open_stats and item.is_equip:
                                 player.inventory.un_equip_item(slot)
 
-            if event.type == pygame.KEYDOWN and not player.inventory.is_open:  # Обработка нажатия клавиш
+            if event.type == pygame.KEYDOWN and not player.inventory.is_open and player.action_count:  # Обработка нажатия клавиш
                 keys = pygame.key.get_pressed()
                 player.update(keys, screen)
 
