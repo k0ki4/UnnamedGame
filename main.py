@@ -1,5 +1,5 @@
 from check_database import check_db
-from loot.chest import InfinityChest
+from loot.chest import InfinityChest, ArmorChest
 from monsters.monster_logic import *
 from player_logic import *
 import pygame
@@ -91,9 +91,12 @@ if __name__ == '__main__':
     all_monster.append(monster)
     all_monster.append(slime)
 
-    loot = LootChest(board, x=3, y=4, rarity=2)
-    loot2 = LootChest(board, x=4, y=5, rarity=3)
-    infinity_chest = InfinityChest(board, x=2, y=2, rarity=3)
+    chest_sps = [
+        LootChest(board, x=4, y=4, rarity=2),
+        LootChest(board, x=4, y=5, rarity=3),
+        ArmorChest(board, x=4, y=6, rarity=1),
+        InfinityChest(board, x=2, y=2, rarity=3)
+    ]
     running = True
 
     while running:
@@ -133,9 +136,8 @@ if __name__ == '__main__':
             player.fight_cell(screen)
 
         screen.blit(player.image, player.rect)
-        screen.blit(loot.image, loot.rect)
-        screen.blit(loot2.image, loot2.rect)
-        screen.blit(infinity_chest.image, infinity_chest.rect)
+        for chest in chest_sps:
+            screen.blit(chest.image, chest.rect)
 
         if all_monster:
             for i in all_monster:

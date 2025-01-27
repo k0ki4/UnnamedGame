@@ -101,8 +101,8 @@ class InfinityChest(LootChest):
 
 
 class ArmorChest(LootChest):
-    def __init__(self, board, *groups, x, y):
-        super().__init__(board, *groups, x=x, y=y)
+    def __init__(self, board, *groups, x, y, rarity=1):
+        super().__init__(board, *groups, x=x, y=y, rarity=rarity)
 
     def get_item_for_rarity(self):
         if self.rarity > 1:
