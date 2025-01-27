@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     while running:
         all_monster = [monster for monster in all_monster if not monster.is_dead]
-        if player.action_count == 0:
+        if player.action_count <= 0:
             [i.attack_damage(player) for i in all_monster]
             player.action_count = player.action_const
 

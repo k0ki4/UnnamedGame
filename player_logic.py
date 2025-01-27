@@ -39,7 +39,7 @@ class Player(pygame.sprite.Sprite):
         self.fight_mode = False
 
         self.last_move_time = 0  # Время последнего движения
-        self.move_delay = 0.1  # Задержка в секундах
+        self.move_delay = 0.25  # Задержка в секундах
 
         self.pulse_time = 0
 
