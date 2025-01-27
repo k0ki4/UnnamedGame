@@ -268,10 +268,6 @@ class Dummy(Monster):
     def get_damage(self, player):
         if self.damaged:
             return
-        self.hp -= player.damage
-        if self.hp <= 0:
-            self.dead(player)
-            return
 
         if not self.damaged:  # Если не в состоянии получения урона
             self.damaged = True  # Устанавливаем флаг получения урона
