@@ -3,7 +3,7 @@ import random
 import time
 import pygame
 
-from inventory_logic import Inventory, EquipItemSlot, HelmetSlot, ChestplateSlot, LeggingsSlot
+from inventory_logic import Inventory, EquipItemSlot, HelmetSlot, ChestplateSlot, LeggingsSlot, AccessoriesItemSlot
 from loot.chest import LootChest
 from monsters.monster_logic import Monster
 
@@ -62,16 +62,21 @@ class Player(pygame.sprite.Sprite):
     def calc_stats(self):
         self.damage = 0
         self.armor = 0
+        self.max_hp = 10
         self.damage += self.default_damage
         self.armor += self.default_armor
         equip_weapon = [slot.item.damage for slot in self.inventory.unic_slot if
                         slot.item is not None and isinstance(slot, EquipItemSlot)]
         equip_armor = [slot.item.protect for slot in self.inventory.unic_slot if slot.item is not None and
                        isinstance(slot, (HelmetSlot, ChestplateSlot, LeggingsSlot))]
+        equip_acs = [slot.item.buff_hp for slot in self.inventory.unic_slot if slot.item is not None and
+                       isinstance(slot, AccessoriesItemSlot)]
         if equip_armor:
             self.armor += sum(equip_armor)
         if equip_weapon:
             self.damage += sum(equip_weapon)
+        if equip_acs:
+            self.max_hp += sum(equip_acs)
         self.damage += self.lvl
 
     def calc_cell(self, cell, action_step):

@@ -2,38 +2,38 @@ import sqlite3
 
 import pygame.sprite
 
-armor_list = [
-    {"name": "Нагрудник", "unic": 2, "protect": 10, "rarity": 1,
-     "sprite_path": "sprites/armor_spr/chestplate_sp/chestplate_r.png"},
-    {"name": "Нагрудник+", "unic": 2, "protect": 13, "rarity": 2,
-     "sprite_path": "sprites/armor_spr/chestplate_sp/chestplate_r.png"},
-    {"name": "Нагрудник++", "unic": 2, "protect": 20, "rarity": 3,
-     "sprite_path": "sprites/armor_spr/chestplate_sp/chestplate_r.png"},
+accessories_list = [
+    {"name": "Деревянное Кольцо", "unic": 2, "buff_hp": 5, "rarity": 1,
+     "sprite_path": "sprites/accss_sp/wood_ring_r1.png"},
+    {"name": "Изумрудовое Кольцо", "unic": 2, "buff_hp": 8, "rarity": 1,
+     "sprite_path": "sprites/accss_sp/emerald_ring_r1.png"},
+    {"name": "Кольцо", "unic": 2, "buff_hp": 11, "rarity": 1,
+     "sprite_path": "sprites/accss_sp/ring_r1.png"},
 
-    {"name": "Стальной нагрудник", "unic": 2, "protect": 30, "rarity": 4,
-     "sprite_path": "sprites/armor_spr/chestplate_sp/steel_chestplate_r4.png"},
+    {"name": "Кольцо+", "unic": 2, "buff_hp": 15, "rarity": 2,
+     "sprite_path": "sprites/accss_sp/silver_ring_r2.png"},
 
-    {"name": "Железный Шлем", "unic": 1, "protect": 10, "rarity": 1,
-     "sprite_path": "sprites/armor_spr/helmet_sp/iron_helmet_r1.png"},
-    {"name": "Железный Шлем+", "unic": 1, "protect": 15, "rarity": 2,
-     "sprite_path": "sprites/armor_spr/helmet_sp/iron_helmet_r2.png"},
-    {"name": "Железный Шлем++", "unic": 1, "protect": 20, "rarity": 3,
-     "sprite_path": "sprites/armor_spr/helmet_sp/iron_helmet_r3.png"},
-    {"name": "Стальной Шлем", "unic": 1, "protect": 22, "rarity": 2,
-     "sprite_path": "sprites/armor_spr/helmet_sp/steel_helmet_r2.png"},
-    {"name": "Стальной Шлем++", "unic": 1, "protect": 30, "rarity": 3,
-     "sprite_path": "sprites/armor_spr/helmet_sp/steel_helmet_r3.png"},
+    {"name": "Серебрянное Кольцо+", "unic": 1, "buff_hp": 18, "rarity": 2,
+     "sprite_path": "sprites/accss_sp/silver_emerald_ring_r2.png"},
+    {"name": "Рубиновое Кольцо", "unic": 1, "buff_hp": 21, "rarity": 2,
+     "sprite_path": "sprites/accss_sp/rub_ring_r2.png"},
+    {"name": "Золотое Кольцо", "unic": 1, "buff_hp": 24, "rarity": 3,
+     "sprite_path": "sprites/accss_sp/gold_ring_r3.png"},
+    {"name": "Золотое Кольцо++", "unic": 1, "buff_hp": 27, "rarity": 3,
+     "sprite_path": "sprites/accss_sp/gold_emerald_ring_r3.png"},
+    {"name": "Золотое Кольцо+++", "unic": 1, "buff_hp": 30, "rarity": 3,
+     "sprite_path": "sprites/accss_sp/rub_gold_ring_r3.png"},
 
 ]
 
 
 class Accessories(pygame.sprite.Sprite):
-    def __init__(self, name, unic, protect, rarity, sprite_path, *groups):
+    def __init__(self, name, unic, buff_hp, rarity, sprite_path, *groups):
         super().__init__(*groups)
 
         self.unic = unic
         self.name = name
-        self.protect = protect
+        self.buff_hp = buff_hp
         self.rarity = rarity
         self.sprite_path = sprite_path
         self.bonus = 0
@@ -80,7 +80,7 @@ class Accessories(pygame.sprite.Sprite):
             font_large = pygame.font.SysFont('Arial', 30)
 
             name = font_large.render(f"{self.name}", True, self.color_rarity[self.rarity])  # Белый текст
-            protect_text = font_medium.render(f"Защита: {self.protect}", True, (255, 255, 255))
+            protect_text = font_medium.render(f"Бафф к ХП: {self.buff_hp}", True, (255, 255, 255))
             bonus_text = font_medium.render(f"Бонус редкости: {self.bonus}", True,
                                             (255, 255, 255))
             lvl_text = font_medium.render(f"Бонус уровня: {self.lvl_bonus}", True, (255, 255, 255))
@@ -112,11 +112,11 @@ class Accessories(pygame.sprite.Sprite):
 
     def get_bonus(self, bonus):
         self.bonus = bonus
-        self.protect += bonus
+        self.buff_hp += bonus
 
     def get_lvl_bonus(self, bonus):
         self.lvl_bonus = bonus
-        self.protect += bonus
+        self.buff_hp += bonus
 
     def set_rect(self, rect):
         self.rect = rect
@@ -127,16 +127,16 @@ class Accessories(pygame.sprite.Sprite):
         screen.blit(self.image, slot_rect)
 
     def return_copy(self):
-        return Armor(self.name, self.unic, self.protect, self.rarity, self.sprite_path)
+        return Accessories(self.name, self.unic, self.buff_hp, self.rarity, self.sprite_path)
 
 
-def randomize_armor():
+def randomize_acs():
     with sqlite3.connect('database.db') as db:
         cursor = db.cursor()
-        cursor.execute("SELECT name, unic, protect, rarity, sprite_path FROM armor")
-        armor_data = cursor.fetchall()
-    return [Armor(name=name, unic=unic, protect=protect, rarity=rarity, sprite_path=sprite_path) for
-            name, unic, protect, rarity, sprite_path in armor_data]
+        cursor.execute("SELECT name, unic, buff_hp, rarity, sprite_path FROM accessories")
+        acs_data = cursor.fetchall()
+    return [Accessories(name=name, unic=unic, buff_hp=buff_hp, rarity=rarity, sprite_path=sprite_path) for
+            name, unic, buff_hp, rarity, sprite_path in acs_data]
 
 
-result_armor = randomize_armor()
+result_acs = randomize_acs()

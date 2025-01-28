@@ -2,12 +2,13 @@ import random
 
 import pygame
 
+from acss.acss_logic import result_acs
 from armores.armor_logic import result_armor
 from weapons.weapon_logic import result_weapon
 
 
 class LootChest(pygame.sprite.Sprite):
-    all_items = result_weapon + result_armor
+    all_items = result_weapon + result_armor + result_acs
 
     def __init__(self, board, *groups, x, y, rarity=1):
         self.board = board
@@ -45,6 +46,7 @@ class LootChest(pygame.sprite.Sprite):
             new_list = filter_item_by_rarity(self.all_items, self.rarity)
 
         if new_list:
+            random.shuffle(self.all_items)
             item = random.choice(new_list)
             item = item.return_copy()
             return item
@@ -106,7 +108,7 @@ class ArmorChest(LootChest):
 
     def get_item_for_rarity(self):
         if self.rarity > 1:
-            new_list = filter_item_by_rarity(result_armor, self.rarity) + filter_item_by_rarity(self.all_items,
+            new_list = filter_item_by_rarity(result_armor, self.rarity) + filter_item_by_rarity(result_armor,
                                                                                                   self.rarity - 1)
         else:
             new_list = filter_item_by_rarity(result_armor, self.rarity)

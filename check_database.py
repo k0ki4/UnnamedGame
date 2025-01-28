@@ -1,5 +1,6 @@
 import sqlite3
 
+from acss.acss_logic import accessories_list
 from armores.armor_logic import armor_list
 from weapons.weapon_logic import weapons_list
 
@@ -27,6 +28,16 @@ def check_db():
             sprite_path TEXT,
             PRIMARY KEY("id" AUTOINCREMENT)
         );
+        
+        CREATE TABLE IF NOT EXISTS accessories (
+            id INTEGER,
+            name TEXT,
+            unic INTEGER,
+            buff_hp INTEGER,
+            rarity INTEGER,
+            sprite_path TEXT,
+            PRIMARY KEY("id" AUTOINCREMENT)
+        );
         """
         cursor.executescript(query)
 
@@ -41,3 +52,8 @@ def check_db():
             for armor in armor_list:
                 cursor.execute("INSERT INTO armor (name, unic, protect, rarity, sprite_path) VALUES (?, ?, ?, ?, ?)",
                                (armor["name"], armor['unic'], armor["protect"], armor["rarity"], armor["sprite_path"]))
+        cursor.execute("SELECT COUNT(*) FROM accessories")
+        if cursor.fetchone()[0] == 0:
+            for acs in accessories_list:
+                cursor.execute("INSERT INTO accessories (name, unic, buff_hp, rarity, sprite_path) VALUES (?, ?, ?, ?, ?)",
+                               (acs["name"], acs['unic'], acs["buff_hp"], acs["rarity"], acs["sprite_path"]))

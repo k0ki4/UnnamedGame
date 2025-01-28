@@ -1,5 +1,6 @@
 import pygame
 
+from acss.acss_logic import Accessories
 from armores.armor_logic import Armor
 from weapons.weapon_logic import Weapon
 
@@ -137,6 +138,24 @@ class Inventory:
                 1: HelmetSlot,
                 2: ChestplateSlot,
                 3: LeggingsSlot
+            }
+
+            for search_slot in self.unic_slot:
+                if item.is_equip:
+                    return
+
+                slot_class = slot_mapping.get(item.unic)
+                if slot_class and isinstance(search_slot, slot_class) and search_slot.item is None:
+                    print('Слот найден')
+                    slot.item = None
+                    search_slot.item = item
+                    search_slot.item.open_stats = False
+                    item.equip(search_slot.get_rect())
+        elif isinstance(item, Accessories):
+            slot_mapping = {
+                1: AccessoriesItemSlot,
+                2: AccessoriesItemSlot,
+                3: AccessoriesItemSlot
             }
 
             for search_slot in self.unic_slot:
