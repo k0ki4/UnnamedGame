@@ -4,11 +4,12 @@ import pygame
 
 from acss.acss_logic import result_acs
 from armores.armor_logic import result_armor
+from potions.potion_logic import result_potion, Potion
 from weapons.weapon_logic import result_weapon
 
 
 class LootChest(pygame.sprite.Sprite):
-    all_items = result_weapon + result_armor + result_acs
+    all_items = result_potion + result_acs + result_armor + result_weapon
 
     def __init__(self, board, *groups, x, y, rarity=1):
         self.board = board
@@ -53,19 +54,20 @@ class LootChest(pygame.sprite.Sprite):
 
     def toggle_chest(self, player):
         if not self.is_open:
+            count_loot = random.randint(1, 2)
+            for i in range(count_loot):
+                item = self.get_item_for_rarity()
+                print(f'Редкость: {self.rarity}')
+                print('Сундук открыт')
+                print(f'Редкость предмета: {item.rarity}')
+                if self.rarity > item.rarity and not isinstance(item, Potion):
+                    bonus = random.randint(1, 5)
+                    item.get_bonus(bonus)
+                    print(f'Бонус к оружию +{bonus}')
+                    item.get_lvl_bonus(player.lvl)
+                    print(f'Бонус от лвл-а {player.lvl}')
+                player.inventory.add_item(item)
             self.is_open = True
-            self.image = pygame.transform.scale(self.open_chest, (self.board.cell_size, self.board.cell_size))
-            item = self.get_item_for_rarity()
-            print(f'Редкость: {self.rarity}')
-            print('Сундук открыт')
-            print(f'Редкость предмета: {item.rarity}')
-            if self.rarity > item.rarity:
-                bonus = random.randint(1, 5)
-                item.get_bonus(bonus)
-                print(f'Бонус к оружию +{bonus}')
-                item.get_lvl_bonus(player.lvl)
-                print(f'Бонус от лвл-а {player.lvl}')
-            player.inventory.add_item(item)
 
         else:
             print('Сундук уже открыт')
@@ -86,20 +88,19 @@ class InfinityChest(LootChest):
 
     def toggle_chest(self, player):
         if not self.is_open and self.infinity:
-            item = self.get_item_for_rarity()
-            print(item)
-
-            print(f'Редкость: {self.rarity}')
-            print('Сундук открыт')
-            print(f'Редкость предмета: {item.rarity}')
-            if self.rarity > item.rarity:
-                bonus = random.randint(1, 5)
-                item.get_bonus(bonus)
-                print(f'Бонус к оружию +{bonus}')
-                item.get_lvl_bonus(player.lvl)
-                print(f'Бонус от лвл-а {player.lvl}')
-            player.inventory.add_item(item)
-
+            count_loot = random.randint(1, 2)
+            for i in range(count_loot):
+                item = self.get_item_for_rarity()
+                print(f'Редкость: {self.rarity}')
+                print('Сундук открыт')
+                print(f'Редкость предмета: {item.rarity}')
+                if self.rarity > item.rarity and not isinstance(item, Potion):
+                    bonus = random.randint(1, 5)
+                    item.get_bonus(bonus)
+                    print(f'Бонус к оружию +{bonus}')
+                    item.get_lvl_bonus(player.lvl)
+                    print(f'Бонус от лвл-а {player.lvl}')
+                player.inventory.add_item(item)
 
 
 class ArmorChest(LootChest):

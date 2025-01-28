@@ -2,6 +2,7 @@ import sqlite3
 
 from acss.acss_logic import accessories_list
 from armores.armor_logic import armor_list
+from potions.potion_logic import potion_list
 from weapons.weapon_logic import weapons_list
 
 
@@ -38,6 +39,15 @@ def check_db():
             sprite_path TEXT,
             PRIMARY KEY("id" AUTOINCREMENT)
         );
+        
+        CREATE TABLE IF NOT EXISTS potion (
+            id INTEGER,
+            name TEXT,
+            effect INTEGER,
+            rarity INTEGER,
+            sprite_path TEXT,
+            PRIMARY KEY("id" AUTOINCREMENT)
+        );
         """
         cursor.executescript(query)
 
@@ -50,10 +60,18 @@ def check_db():
         cursor.execute("SELECT COUNT(*) FROM armor")
         if cursor.fetchone()[0] == 0:
             for armor in armor_list:
-                cursor.execute("INSERT INTO armor (name, unic, protect, rarity, sprite_path) VALUES (?, ?, ?, ?, ?)",
-                               (armor["name"], armor['unic'], armor["protect"], armor["rarity"], armor["sprite_path"]))
+                cursor.execute("INSERT INTO armor (name, unic, protect, rarity, sprite_path) "
+                               "VALUES (?, ?, ?, ?, ?)",
+                               (armor["name"], armor['unic'], armor["protect"], armor["rarity"],
+                                armor["sprite_path"]))
         cursor.execute("SELECT COUNT(*) FROM accessories")
         if cursor.fetchone()[0] == 0:
             for acs in accessories_list:
-                cursor.execute("INSERT INTO accessories (name, unic, buff_hp, rarity, sprite_path) VALUES (?, ?, ?, ?, ?)",
-                               (acs["name"], acs['unic'], acs["buff_hp"], acs["rarity"], acs["sprite_path"]))
+                cursor.execute(
+                    "INSERT INTO accessories (name, unic, buff_hp, rarity, sprite_path) VALUES (?, ?, ?, ?, ?)",
+                    (acs["name"], acs['unic'], acs["buff_hp"], acs["rarity"], acs["sprite_path"]))
+        cursor.execute("SELECT COUNT(*) FROM potion")
+        if cursor.fetchone()[0] == 0:
+            for potion in potion_list:
+                cursor.execute("INSERT INTO potion (name, effect, rarity, sprite_path) VALUES (?, ?, ?, ?)",
+                               (potion["name"], potion['effect'], potion["rarity"], potion["sprite_path"]))

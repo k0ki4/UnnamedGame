@@ -14,7 +14,7 @@ class Player(pygame.sprite.Sprite):
         self.board = board
         self.screen = None
 
-        self.inventory = Inventory()
+        self.inventory = Inventory(self)
 
         self.radar_list = []
         self.radar_img = None
@@ -363,6 +363,9 @@ class Player(pygame.sprite.Sprite):
     def dead_player(self):
         print('Смерть')
         exit()
+
+    def get_board(self):
+        return self.board
 
     def get_screen(self):
         return self.screen

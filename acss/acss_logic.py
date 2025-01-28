@@ -60,7 +60,7 @@ class Accessories(pygame.sprite.Sprite):
             self.rect = rect
 
     def on_click(self, player):
-        print(f'Выбранна броня: {self.name}' if not self.open_stats else "Выбор снят")
+        print(f'Выбранн акссесуар: {self.name}' if not self.open_stats else "Выбор снят")
         for slot in player.inventory.slots + player.inventory.unic_slot:
             if slot.item is not None and slot.item != self:
                 slot.item.open_stats = False

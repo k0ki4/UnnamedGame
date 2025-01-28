@@ -2,6 +2,7 @@ import pygame
 
 from acss.acss_logic import Accessories
 from armores.armor_logic import Armor
+from potions.potion_logic import Potion
 from weapons.weapon_logic import Weapon
 
 
@@ -70,9 +71,11 @@ class AccessoriesItemSlot(InventorySlot):
 # inventory
 
 class Inventory:
-    def __init__(self):
+    def __init__(self, player):
         self.cell_size = cell_width, cell_height = 57, 57
         cell_spacing = 0
+
+        self.player = player
 
         self.slots = []
         self.rows = 5  # Количество строк
@@ -164,11 +167,12 @@ class Inventory:
 
                 slot_class = slot_mapping.get(item.unic)
                 if slot_class and isinstance(search_slot, slot_class) and search_slot.item is None:
-                    print('Слот найден')
                     slot.item = None
                     search_slot.item = item
                     search_slot.item.open_stats = False
                     item.equip(search_slot.get_rect())
+        elif isinstance(item, Potion):
+            item.use(self.player)
 
     def add_item(self, item):
         for slot in self.slots:
