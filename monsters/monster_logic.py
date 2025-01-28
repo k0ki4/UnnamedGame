@@ -311,10 +311,10 @@ class Animated:
 
 
 class Slime(Monster, Animated):
-    up = './sprites/slime/up'
-    right = './spites/slime/right'
-    left = './sprites/slime/left'
-    down = './sprites/slime/down'
+    up = './sprites/monsters_sp/slime/up'
+    right = './spites/monsters_sp/slime/right'
+    left = './sprites/monsters_sp/slime/left'
+    down = './sprites/monsters_sp/slime/down'
 
     def __init__(self, board, *groups, x, y):
         super().__init__(board, *groups, x=x, y=y)
