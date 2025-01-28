@@ -139,7 +139,7 @@ class Player(pygame.sprite.Sprite):
                                                                protect_image_rect.height))
 
         damage_text = self.font.render(f'Урон: {self.damage}', True, 'RED')
-        protect_text = self.font.render(f'Защита: {self.armor}', True, 'RED')
+        protect_text = self.font.render(f'Зщ: {self.armor}', True, 'RED')
 
         screen.blit(damage_image, damage_image_rect)
         screen.blit(protect_image, protect_image_rect)
