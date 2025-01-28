@@ -12,6 +12,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, board, *groups, hp=10, default_damage=1, default_armor=1):
         super().__init__(*groups)
         self.board = board
+        self.screen = None
 
         self.inventory = Inventory()
 
@@ -108,9 +109,18 @@ class Player(pygame.sprite.Sprite):
         lvl_image = pygame.transform.scale(lvl_image, (lvl_image_rect.width,
                                                        lvl_image_rect.height))
 
-        lvl_text = self.font.render(f'Ходов: {self.armor}', True, 'RED')
+        lvl_text = self.font.render(f'Ур: {self.lvl}', True, 'RED')
         screen.blit(lvl_image, lvl_image_rect)
         screen.blit(lvl_text, lvl_image_rect)
+
+        step_image = pygame.image.load('sprites/gui/step.png').convert_alpha()
+        step_image_rect = pygame.Rect(825, 250, 70, 20)
+        step_image = pygame.transform.scale(step_image, (step_image_rect.width,
+                                                       step_image_rect.height))
+
+        step_text = self.font.render(f'Ходов: {self.action_count}', True, 'RED')
+        screen.blit(step_image, step_image_rect)
+        screen.blit(step_text, step_image_rect)
 
     def damage_protect_render(self, screen):
         damage_image = pygame.image.load('sprites/gui/damage.png').convert_alpha()
@@ -196,6 +206,7 @@ class Player(pygame.sprite.Sprite):
         self.count_usage()
 
     def update(self, keys, screen):
+        self.screen = screen
         if keys[pygame.K_r]:
             self.fight_mode = not self.fight_mode
             return
@@ -325,21 +336,31 @@ class Player(pygame.sprite.Sprite):
         self.last_fight_render_time = current_time
 
     def get_damage(self, enemy):
-        enemy.get_damage(self)
-        print('Урон нанесён')
-        self.action_count -= 1
+        res = enemy.get_damage(self)
+        if res is True:
+            print('Урон нанесён 1')
+
+        elif isinstance(res, int):
+            print('Урон нанесён')
+        if res is not None:
+            self.action_count -= 1
+
+
 
     def taking_damage(self, damage):
         if damage <= self.armor:
             self.hp -= 1
-        else:
-            self.hp -= damage
+        elif damage > self.armor:
+            self.hp -= (self.damage - self.armor)
         if self.hp <= 0:
             self.dead_player()
 
     def dead_player(self):
         print('Смерть')
         exit()
+
+    def get_screen(self):
+        return self.screen
 
     def get_self(self):
         return self.__class__

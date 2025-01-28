@@ -218,11 +218,15 @@ class Monster(pygame.sprite.Sprite):
 
     def get_damage(self, player):
         if self.damaged:
-            return
-        self.hp -= player.damage
+            return None
+        if player.damage <= self.armor:
+            self.hp -= 1
+        elif player.damage > self.armor:
+            self.hp -= (player.damage - self.armor)
+
         if self.hp <= 0:
             self.dead(player)
-            return
+        return True
 
     def dead(self, player):
         self.kill()
