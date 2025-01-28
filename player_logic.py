@@ -25,6 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.default_armor = default_armor
         self.armor = 0
         self.damage = 0
+        self.max_hp = hp
         self.hp = hp
         self.action_const = 4
         self.action_count = 4
@@ -47,7 +48,7 @@ class Player(pygame.sprite.Sprite):
         self.fight_render_time_delay = 0.5
 
         pygame.font.init()
-        self.font = pygame.font.SysFont('Arial', 15)
+        self.font = pygame.font.SysFont('Arial', 14)
 
         self.is_dead = False
 
@@ -83,6 +84,54 @@ class Player(pygame.sprite.Sprite):
         self.action_count -= 1
         return x + action_step[0], y + action_step[1]  # Возвращаем новое положение
 
+    def render_health(self, screen):
+        health_image = pygame.image.load('sprites/gui/health.png').convert_alpha()
+        health_image_rect = pygame.Rect(825, 80, 350, 25)
+        health_image = pygame.transform.scale(health_image, (health_image_rect.width, health_image_rect.height))
+
+        health_percentage = self.hp / self.max_hp
+        red_health_width = int(300 * health_percentage)
+
+        red_health_surface = pygame.Surface((red_health_width, health_image_rect.height))
+        red_health_surface.fill((255, 0, 0))
+
+        health_text = f"{self.hp}/{self.max_hp}"
+        text_surface = self.font.render(health_text, True, (255, 255, 255))
+        text_rect = text_surface.get_rect(center=(health_image_rect.centerx, health_image_rect.centery))
+        screen.blit(red_health_surface, (health_image_rect.x + 25, health_image_rect.y))
+        screen.blit(health_image, health_image_rect)
+        screen.blit(text_surface, text_rect)
+
+    def lvl_render(self, screen):
+        lvl_image = pygame.image.load('sprites/gui/step.png').convert_alpha()
+        lvl_image_rect = pygame.Rect(825, 220, 70, 20)
+        lvl_image = pygame.transform.scale(lvl_image, (lvl_image_rect.width,
+                                                       lvl_image_rect.height))
+
+        lvl_text = self.font.render(f'Ходов: {self.armor}', True, 'RED')
+        screen.blit(lvl_image, lvl_image_rect)
+        screen.blit(lvl_text, lvl_image_rect)
+
+    def damage_protect_render(self, screen):
+        damage_image = pygame.image.load('sprites/gui/damage.png').convert_alpha()
+        damage_image_rect = pygame.Rect(825, 150, 80, 20)
+        damage_image = pygame.transform.scale(damage_image, (damage_image_rect.width,
+                                                             damage_image_rect.height))
+
+        protect_image = pygame.image.load('sprites/gui/protect.png').convert_alpha()
+        protect_image_rect = pygame.Rect(825, 190, 80, 20)
+        protect_image = pygame.transform.scale(protect_image, (protect_image_rect.width,
+                                                               protect_image_rect.height))
+
+        damage_text = self.font.render(f'Урон: {self.damage}', True, 'RED')
+        protect_text = self.font.render(f'Защита: {self.armor}', True, 'RED')
+
+        screen.blit(damage_image, damage_image_rect)
+        screen.blit(protect_image, protect_image_rect)
+
+        screen.blit(damage_text, damage_image_rect)
+        screen.blit(protect_text, protect_image_rect)
+
     def render_stats(self, screen):
         self.calc_stats()
 
@@ -96,12 +145,12 @@ class Player(pygame.sprite.Sprite):
         screen.blit(stats_imp_scaled, stats_rect.topleft)
         screen.blit(stats_imp_scaled2, stats_rect2.topleft)
 
-        take_img = pygame.image.load("sprites/take.png").convert_alpha()
+        take_img = pygame.image.load("sprites/gui/use.png").convert_alpha()
         take_img = pygame.transform.scale(take_img, (60, 60))
         take_img_rect = pygame.Rect(845, 500, 60, 60)
         screen.blit(take_img, take_img_rect)
 
-        start_fight = pygame.image.load("sprites/take.png").convert_alpha()
+        start_fight = pygame.image.load("sprites/gui/use.png").convert_alpha()
         start_fight = pygame.transform.scale(start_fight, (60, 60))
         start_fight_rect = pygame.Rect(845, 600, 60, 60)
         screen.blit(start_fight, start_fight_rect)
@@ -115,30 +164,34 @@ class Player(pygame.sprite.Sprite):
         text_y = start_fight_rect.y + (start_fight_rect.height - text_height) // 2
         screen.blit(start_fight_text_2, (text_x, text_y))
 
+        open_inventory = pygame.image.load("sprites/gui/use.png").convert_alpha()
+        open_inventory = pygame.transform.scale(open_inventory, (60, 60))
+        open_inventory_rect = pygame.Rect(970, 500, 60, 60)
+        screen.blit(open_inventory, open_inventory_rect)
+
+        open_inventory_text = self.font.render("Открыть инвентарь", True, (255, 255, 255))  # Белый текст
+        open_inventory_text_button = self.font.render("I", True, (255, 255, 255))  # Белый текст
+        screen.blit(open_inventory_text, (950, 470))
+
+        text_width, text_height = open_inventory_text_button.get_size()
+        text_x = open_inventory_rect.x + (open_inventory_rect.width - text_width) // 2
+        text_y = open_inventory_rect.y + (open_inventory_rect.height - text_height) // 2
+        screen.blit(open_inventory_text_button, (text_x, text_y))
+
         take_text_take = self.font.render("Взаимодействовать", True, (255, 255, 255))  # Белый текст
         take_text = self.font.render("E", True, (255, 255, 255))  # Белый текст
         screen.blit(take_text_take, (820, 470))
         if self.radar_list:
-            text_width, text_height = take_text.get_size()
-            text_x = take_img_rect.x + (take_img_rect.width - text_width) // 2
-            text_y = take_img_rect.y + (take_img_rect.height - text_height) // 2
-            screen.blit(take_text, (text_x, text_y))
+            for i in self.radar_list:
+                if isinstance(i, LootChest):
+                    text_width, text_height = take_text.get_size()
+                    text_x = take_img_rect.x + (take_img_rect.width - text_width) // 2
+                    text_y = take_img_rect.y + (take_img_rect.height - text_height) // 2
+                    screen.blit(take_text, (text_x, text_y))
 
-        # Отображаем текст статистики
-        hp_text = self.font.render(f"HP: {self.hp}", True, (255, 255, 255))  # Белый текст
-        damage_text = self.font.render(f"Урон: {self.damage}", True, (255, 255, 255))
-        armor_text = self.font.render(f"Защита: {self.armor}", True, (255, 255, 255))
-        actions_text = self.font.render(f"Осталось действий: {self.action_count}", True,
-                                        (255, 255, 255))
-        lvl_text = self.font.render(f"Уровень: {self.lvl}", True, (255, 255, 255))
-
-        cord_text_x = 840
-        # Позиции текста
-        screen.blit(hp_text, (cord_text_x, 20))
-        screen.blit(damage_text, (cord_text_x, 40))
-        screen.blit(armor_text, (cord_text_x, 60))
-        screen.blit(actions_text, (cord_text_x, 80))
-        screen.blit(lvl_text, (cord_text_x, 100))
+        self.lvl_render(screen)
+        self.damage_protect_render(screen)
+        self.render_health(screen)
 
         self.count_usage()
 
