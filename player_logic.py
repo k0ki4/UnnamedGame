@@ -78,6 +78,8 @@ class Player(pygame.sprite.Sprite):
         if equip_acs:
             self.max_hp += sum(equip_acs)
         self.damage += self.lvl
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
 
     def calc_cell(self, cell, action_step):
         x, y = cell

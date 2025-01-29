@@ -125,7 +125,9 @@ class EffectRegeneration:
     def use_effect(self, player):
         new_hp = player.hp + self.base_regen
         if new_hp > player.max_hp:
-            self.base_regen = player.max_hp
+            player.hp = player.max_hp
+        else:
+            player.hp = new_hp
 
 
 
