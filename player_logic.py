@@ -344,11 +344,6 @@ class Player(pygame.sprite.Sprite):
 
     def get_damage(self, enemy):
         res = enemy.get_damage(self)
-        if res is True:
-            print('Урон нанесён 1')
-
-        elif isinstance(res, int):
-            print('Урон нанесён')
         if res is not None:
             self.action_count -= 1
 
@@ -358,7 +353,7 @@ class Player(pygame.sprite.Sprite):
         if damage <= self.armor:
             self.hp -= 1
         elif damage > self.armor:
-            self.hp -= (self.damage - self.armor)
+            self.hp -= (damage - self.armor)
         if self.hp <= 0:
             self.dead_player()
 

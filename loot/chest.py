@@ -68,6 +68,7 @@ class LootChest(pygame.sprite.Sprite):
                     print(f'Бонус от лвл-а {player.lvl}')
                 player.inventory.add_item(item)
             self.is_open = True
+            self.image = self.open_chest
 
         else:
             print('Сундук уже открыт')

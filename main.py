@@ -49,6 +49,7 @@ class Board:
                 )
 
     def get_cell(self, mouse_pos):
+        player = self.get_player()
         cell_x = (mouse_pos[0] - self.left) // self.cell_size
         cell_y = (mouse_pos[1] - self.top) // self.cell_size
         if 0 <= cell_x <= self.width and 0 <= cell_y <= self.height:
@@ -73,7 +74,37 @@ class Board:
                     return self.board[y][x]
 
 
-if __name__ == '__main__':
+class Play:
+    def __init__(self):
+        self.board = None
+        self.player = None
+
+        self.wave = 1
+
+
+    def menu(self):
+        check_db()
+        pygame.init()
+        fps = 60
+        SIZE = width, height = 1200, 800
+        screen = pygame.display.set_mode((width, height))
+        pygame.display.set_caption("Unnamed Game")
+        running = True
+
+        self.board = Board(10, 10)
+        self.player = Player(self.board)
+
+        while running:
+            screen.fill((0, 0, 0))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+
+            pygame.display.flip()
+
+
+def old_map():
     check_db()
     pygame.init()
     fps = 60
@@ -83,7 +114,7 @@ if __name__ == '__main__':
     board = Board(10, 10)
     player = Player(board)
     monsters_group = pygame.sprite.Group()
-    all_monster = [Bee(board, x=6, y=6, default_damage=4)]
+    all_monster = [Bee(board, x=6, y=6, default_damage=4), Bat(board, x=0, y=4, default_damage=10)]
     monster = Dummy(board, 2, 3, hp=100, default_damage=0,
                     sheet=pygame.image.load('./sprites/monsters_sp/dummy_sp/dummy_spritesheet.png'),
                     columns=3, rows=1)
@@ -94,7 +125,7 @@ if __name__ == '__main__':
     chest_sps = [
         LootChest(board, x=4, y=4, rarity=2),
         LootChest(board, x=4, y=5, rarity=3),
-        ArmorChest(board, x=4, y=6, rarity=1),
+        ArmorChest(board, x=4, y=6),
         InfinityChest(board, x=2, y=2, rarity=3)
     ]
     running = True
@@ -161,3 +192,6 @@ if __name__ == '__main__':
         pygame.display.flip()
 
     pygame.quit()
+if __name__ == '__main__':
+    play = Play()
+    play.menu()

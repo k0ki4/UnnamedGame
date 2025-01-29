@@ -178,11 +178,8 @@ class Monster(pygame.sprite.Sprite):
                 self.set_rect(y, x)
 
     def calc_stats(self):
-        if self.weapon:
-            pass
-        else:
-            self.armor = self.default_armor
-            self.damage = self.default_damage
+        self.armor = self.default_armor
+        self.damage = self.default_damage
 
     def calc_cell(self, cell, action_step):
         pass
@@ -207,14 +204,19 @@ class Monster(pygame.sprite.Sprite):
 
         image_rect = pygame.Rect((center_x, center_y, 150, 20))
         hp_image_rect = pygame.Rect((center_x + 5,
-                                     center_y + 5, hp_width, 10))  # Используем hp_width для высоты
+                                     center_y + 5, hp_width, 10))
         text_width, text_height = hp_text.get_size()
         text_x = image_rect.x + (image_rect.width - text_width) // 2
         text_y = image_rect.y + (image_rect.height - text_height) // 2
 
+        # -----
+        text = self.font.render(f'Урон: {self.damage} Зщ: {self.armor}', True, (255, 255, 255))
+        rect_text = pygame.Rect((self.rect.x - 20, self.rect.y - 20, 150, 10))
+
         screen.blit(image, image_rect)
         screen.blit(hp_image, hp_image_rect)
         screen.blit(hp_text, (text_x, text_y))
+        screen.blit(text, rect_text)
 
     def get_damage(self, player):
         if self.damaged:
@@ -257,7 +259,7 @@ class Dummy(Monster):
         self.image = self.frames[self.cur_frame]
 
     def attack_damage(self, player):
-        pass
+        return True
 
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(self.rect.x, self.rect.y, sheet.get_width() // columns,
@@ -273,9 +275,10 @@ class Dummy(Monster):
         if self.damaged:
             return
 
-        if not self.damaged:  # Если не в состоянии получения урона
-            self.damaged = True  # Устанавливаем флаг получения урона
-            self.damage_start_time = pygame.time.get_ticks()  # Запоминаем время начала анимации
+        if not self.damaged:
+            self.damaged = True
+            self.damage_start_time = pygame.time.get_ticks()
+            return True
 
     def update(self, screen):
         current_time = pygame.time.get_ticks()
@@ -325,7 +328,7 @@ class Bee(Monster, Animated):
         self.need_load = self.down
         self.load_frames()
 
-        self.frame_rate = 255
+        self.frame_rate = 100
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
 
@@ -398,13 +401,92 @@ class Slime(Monster, Animated):
     left = './sprites/monsters_sp/slime/left'
     down = './sprites/monsters_sp/slime/down'
 
-    def __init__(self, board, *groups, x, y):
-        super().__init__(board, *groups, x=x, y=y)
+    def __init__(self, board, *groups, x, y, default_damage=5):
+        super().__init__(board, *groups, x=x, y=y, default_damage=default_damage)
         self.frames = []
         self.need_load = self.down
         self.load_frames()
 
         self.frame_rate = 255
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+
+    def attack_damage(self, player, random_move_chance=0.5):
+        search_close_player = self.fight_cell(player)
+        old = ()
+        new = ()
+
+        if search_close_player:
+            player.taking_damage(self.damage)
+        elif random.random() < random_move_chance:
+            print('#' * 10)
+            directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Вверх, вниз, влево, вправо
+            random.shuffle(directions)  # Перемешиваем направления для случайного выбора
+
+            for direction in directions:
+                x, y = self.board.get_cell((self.rect.x, self.rect.y))
+                print('Старая позиция', y, x)
+                old = (y, x)
+                new_y = y + direction[0]
+                new_x = x + direction[1]
+                # Проверяем границы и проходимость клетки
+                if 0 <= new_y < self.board.height and 0 <= new_x < self.board.width:
+                    if self.board.board[new_y][new_x] == 0:  # Проверяем, что клетка проходимая
+                        self.set_rect(new_x, new_y)  # Перемещаемся
+                        new = (new_y, new_x)
+                        print(f"Монстр переместился в случайную клетку: {(new_y, new_x)}")
+                        self.update_direction((new[0] - old[0], new[1] - old[1]))
+                        return True
+        else:
+            x, y = self.board.get_cell((self.rect.x, self.rect.y))
+            player_x, player_y = self.board.get_cell((player.rect.x, player.rect.y))
+            old = (y, x)
+            path_to_player = self.find_shortest_path((y, x), (player_y, player_x), player)
+            print(f"Текущая позиция монстра: {(y, x)}, Позиция игрока: {(player_y, player_x)}")
+            print(f"Найденный путь: {path_to_player}")
+            print("Monster", {self.__repr__()})
+
+            if path_to_player:
+                x, y = path_to_player[1]
+                new = (x, y)
+                self.set_rect(y, x)
+                direction_to_player = (new[0] - old[0], new[1] - old[1])
+                self.update_direction(direction_to_player)
+
+    def update_direction(self, direction):
+        print('Входящий поворот', direction)
+        if direction == (-1, 0):  # Вверх
+            self.need_load = self.up
+        elif direction == (1, 0):  # Вниз
+            self.need_load = self.down
+        elif direction == (0, -1):  # Влево
+            self.need_load = self.left
+        elif direction == (0, 1):  # Вправо
+            self.need_load = self.right
+        self.load_frames()
+
+    def update(self, screen):
+        current_time = pygame.time.get_ticks()
+        # Логика для обычной анимации (если есть)
+        if current_time - self.last_update > self.frame_rate:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+            self.last_update = current_time
+
+
+class Bat(Monster, Animated):
+    up = './sprites/monsters_sp/bat/up'
+    right = './sprites/monsters_sp/bat/right'
+    left = './sprites/monsters_sp/bat/left'
+    down = './sprites/monsters_sp/bat/down'
+
+    def __init__(self, board, *groups, x, y, default_damage=5):
+        super().__init__(board, *groups, x=x, y=y, default_damage=default_damage)
+        self.frames = []
+        self.need_load = self.down
+        self.load_frames()
+
+        self.frame_rate = 170
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
 
