@@ -83,7 +83,7 @@ if __name__ == '__main__':
     board = Board(10, 10)
     player = Player(board)
     monsters_group = pygame.sprite.Group()
-    all_monster = []
+    all_monster = [Bee(board, x=6, y=6, default_damage=4)]
     monster = Dummy(board, 2, 3, hp=100, default_damage=0,
                     sheet=pygame.image.load('./sprites/monsters_sp/dummy_sp/dummy_spritesheet.png'),
                     columns=3, rows=1)

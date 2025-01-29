@@ -313,6 +313,85 @@ class Animated:
                 self.frames.append(scaled_frame)  # Добавляем кадр в список
 
 
+class Bee(Monster, Animated):
+    up = './sprites/monsters_sp/bee/up'
+    right = './sprites/monsters_sp/bee/right'
+    left = './sprites/monsters_sp/bee/left'
+    down = './sprites/monsters_sp/bee/down'
+
+    def __init__(self, board, *groups, x, y, default_damage=5):
+        super().__init__(board, *groups, x=x, y=y, default_damage=default_damage)
+        self.frames = []
+        self.need_load = self.down
+        self.load_frames()
+
+        self.frame_rate = 255
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+
+    def attack_damage(self, player, random_move_chance=0.3):
+        search_close_player = self.fight_cell(player)
+        old = ()
+        new = ()
+
+        if search_close_player:
+            player.taking_damage(self.damage)
+        elif random.random() < random_move_chance:
+            print('#' * 10)
+            directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Вверх, вниз, влево, вправо
+            random.shuffle(directions)  # Перемешиваем направления для случайного выбора
+
+            for direction in directions:
+                x, y = self.board.get_cell((self.rect.x, self.rect.y))
+                print('Старая позиция', y, x)
+                old = (y, x)
+                new_y = y + direction[0]
+                new_x = x + direction[1]
+                # Проверяем границы и проходимость клетки
+                if 0 <= new_y < self.board.height and 0 <= new_x < self.board.width:
+                    if self.board.board[new_y][new_x] == 0:  # Проверяем, что клетка проходимая
+                        self.set_rect(new_x, new_y)  # Перемещаемся
+                        new = (new_y, new_x)
+                        print(f"Монстр переместился в случайную клетку: {(new_y, new_x)}")
+                        self.update_direction((new[0] - old[0], new[1] - old[1]))
+                        return True
+        else:
+            x, y = self.board.get_cell((self.rect.x, self.rect.y))
+            player_x, player_y = self.board.get_cell((player.rect.x, player.rect.y))
+            old = (y, x)
+            path_to_player = self.find_shortest_path((y, x), (player_y, player_x), player)
+            print(f"Текущая позиция монстра: {(y, x)}, Позиция игрока: {(player_y, player_x)}")
+            print(f"Найденный путь: {path_to_player}")
+            print("Monster", {self.__repr__()})
+
+            if path_to_player:
+                x, y = path_to_player[1]
+                new = (x, y)
+                self.set_rect(y, x)
+                direction_to_player = (new[0] - old[0], new[1] - old[1])
+                self.update_direction(direction_to_player)
+
+    def update_direction(self, direction):
+        print('Входящий поворот', direction)
+        if direction == (-1, 0):  # Вверх
+            self.need_load = self.up
+        elif direction == (1, 0):  # Вниз
+            self.need_load = self.down
+        elif direction == (0, -1):  # Влево
+            self.need_load = self.left
+        elif direction == (0, 1):  # Вправо
+            self.need_load = self.right
+        self.load_frames()
+
+    def update(self, screen):
+        current_time = pygame.time.get_ticks()
+        # Логика для обычной анимации (если есть)
+        if current_time - self.last_update > self.frame_rate:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+            self.last_update = current_time
+
+
 class Slime(Monster, Animated):
     up = './sprites/monsters_sp/slime/up'
     right = './sprites/monsters_sp/slime/right'
