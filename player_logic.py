@@ -51,6 +51,9 @@ class Player(pygame.sprite.Sprite):
         pygame.font.init()
         self.font = pygame.font.SysFont('Arial', 14)
 
+        self.monster_image = pygame.image.load("sprites/inventory/enemy_cell.png").convert_alpha()
+        self.normal_image = pygame.image.load("sprites/inventory/empty_cell.png").convert_alpha()
+
         self.is_dead = False
 
     def get_xp(self, count):
@@ -290,23 +293,22 @@ class Player(pygame.sprite.Sprite):
     def fight_cell(self, screen):
         num = random.randint(-3, 3)
         current_time = time.time()
-        base_size = self.board.cell_size - 10  # Размер куба с учетом отступа
+        base_size = self.board.cell_size - 10
         rect = pygame.Rect(0, 0, base_size, base_size)
 
         x, y = self.get_cell((self.rect.x, self.rect.y))
         direction = [
             (-1, -1),
-            (-1, 0),  # вверх
+            (-1, 0),
             (-1, 1),
-            (1, 0),  # вниз
+            (1, 0),
             (1, -1),
             (1, 1),
-            (0, -1),  # влево
-            (0, 1)  # вправо
+            (0, -1),
+            (0, 1)
         ]
 
-        # Изменяем время пульсации
-        self.pulse_time += 0.05  # Увеличиваем время (можно настроить скорость)
+        self.pulse_time += 0.05
 
         for dx, dy in direction:
             nx, ny = x + dx, y + dy
@@ -314,27 +316,27 @@ class Player(pygame.sprite.Sprite):
             rect.x += 5
             rect.y += 5
 
-            # Изменяем размер куба на основе синуса
-            pulse_scale = 0.7 + 0.23 * math.sin(self.pulse_time)  # Измените амплитуду по желанию
-            scaled_size = int(base_size * pulse_scale)
-
-            # Центрируем пульсирующий прямоугольник
-            pulse_rect = pygame.Rect(
-                rect.centerx - scaled_size // 2,
-                rect.centery - scaled_size // 2,
-                scaled_size,
-                scaled_size
-            )
-
-            if current_time - self.last_fight_render_time >= self.fight_render_time_delay:
-                pulse_rect.x += 5 - num // 2
-                pulse_rect.y += 5 - num // 2
+            pulse_scale = 0.7 + 0.23 * math.sin(self.pulse_time)
+            scaled_width = int(base_size * pulse_scale)
+            scaled_height = int(base_size * pulse_scale)
 
             if 0 <= nx < self.board.width and 0 <= ny < self.board.height:
                 if isinstance(self.board.board[ny][nx], Monster):
-                    pygame.draw.rect(screen, "RED", pulse_rect)
+                    scaled_image = pygame.transform.scale(self.monster_image, (scaled_width, scaled_height))
+                    pulse_rect = scaled_image.get_rect(center=rect.center)
+
+                    if current_time - self.last_fight_render_time >= self.fight_render_time_delay:
+                        pulse_rect.x += 5 - num // 2
+                        pulse_rect.y += 5 - num // 2
+                    screen.blit(scaled_image, pulse_rect)
                 elif not isinstance(self.board.board[ny][nx], (Monster, LootChest)):
-                    pygame.draw.rect(screen, "GRAY", pulse_rect)  # Цвет пульсации можно изменить
+                    scaled_image = pygame.transform.scale(self.normal_image, (scaled_width, scaled_height))
+                    pulse_rect = scaled_image.get_rect(center=rect.center)
+
+                    if current_time - self.last_fight_render_time >= self.fight_render_time_delay:
+                        pulse_rect.x += 5 - num // 2
+                        pulse_rect.y += 5 - num // 2
+                    screen.blit(scaled_image, pulse_rect)
 
                 if self.board.board[ny][nx] != 0:
                     if self.board.board[ny][nx] not in self.radar_list:

@@ -10,11 +10,14 @@ class Board:
         self.width = width
         self.height = height
         self.padding = padding
+        # self.background = pygame.image.load('sprites/map/frame.png').convert_alpha()
+        # windows_size = pygame.display.get_window_size()
+        # self.background = pygame.transform.scale(self.background, (windows_size[0] - 400, windows_size[1]))
 
         # Вычисляем размер окна
         self.window_size = pygame.display.get_window_size()
 
-        self.grass = pygame.image.load('sprites/grass.jpg').convert_alpha()
+        self.grass = pygame.image.load('sprites/map/floor.png').convert_alpha()
 
         # Вычисляем размер ячейки с учетом отступов
         self.cell_size = (self.window_size[0] - 2 * padding) // self.width
@@ -48,6 +51,7 @@ class Board:
                      self.cell_size, self.cell_size), 1
                 )
 
+
     def get_cell(self, mouse_pos):
         player = self.get_player()
         cell_x = (mouse_pos[0] - self.left) // self.cell_size
@@ -76,122 +80,220 @@ class Board:
 
 class Play:
     def __init__(self):
-        self.board = None
-        self.player = None
-
-        self.wave = 1
-
-
-    def menu(self):
-        check_db()
         pygame.init()
+        check_db()
         fps = 60
         SIZE = width, height = 1200, 800
         screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Unnamed Game")
+        self.screen = screen
+        self.board = None
+        self.player = None
+
+        self.width, self.height = 1200, 800
+        self.wave = 1
+
+        self.font = pygame.font.Font(None, 36)
+        self.und_font = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 46)
+        self.und_large_font = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 80)
+
+        self.amplitude = 20  # Максимальное смещение от центра
+        self.speed = 0.0015  # Скорость анимации
+        self.start_time = pygame.time.get_ticks()
+
+        # button menu
+        self.btn_image = pygame.image.load('sprites/menu/green_btn.png').convert_alpha()
+        self.btn_rect = self.btn_image.get_rect(center=(self.width // 2, self.height // 2))
+
+        self.exit_btn = pygame.image.load('sprites/menu/red_btn.png').convert_alpha()
+        self.exit_btn_rect = self.exit_btn.get_rect(center=(self.width // 2, self.height // 2 + 130))
+
+        # Параметры для наклона текста
+        self.amplitude_name_game = 10  # Максимальный угол наклона
+        self.speed_name_game = 0.0015  # Скорость анимации
+
+        self.name_game_surface = self.und_large_font.render('UNNAMED GAME', True, (255, 255, 255))
+        self.name_game_surface_rect = self.name_game_surface.get_rect(center=(self.width // 2, self.height // 2 - 200))
+
+    def new_sound(self, path_to_music, duration=None, volume=None):
+        music = pygame.mixer.Sound(path_to_music)
+        music.set_volume(volume)
+        return music
+
+    def load_menu(self):
+        background_image = pygame.image.load('sprites/menu/background.png').convert_alpha()
+        background_image = pygame.transform.scale(background_image, (self.width, self.height))
+        background_image_rect = background_image.get_rect()
+
+        elapsed_time = pygame.time.get_ticks() - self.start_time
+        offset = self.amplitude * math.sin(elapsed_time * self.speed)
+
+        text_surface = self.und_font.render('Играть', True, (255, 255, 255))  # Белый цвет текста
+        text_rect = text_surface.get_rect(center=self.btn_rect.center)  # Центрируем текст на кнопке
+        new_rect = self.btn_rect.move(0, offset)
+        text_rect.center = new_rect.center
+
+        exit_btn_surface = self.und_font.render('Выход', True, (255, 255, 255))  # Белый цвет текста
+        exit_btn_text_rect = exit_btn_surface.get_rect(center=self.exit_btn_rect.center)  # Центрируем текст на кнопке
+        exit_btn_new_rect = self.exit_btn_rect.move(0, offset)
+        exit_btn_text_rect.center = exit_btn_new_rect.center
+
+        # Наклон текста
+        angle = self.amplitude_name_game * math.sin(elapsed_time * self.speed_name_game)
+        rotated_new_text_surface = pygame.transform.rotate(self.name_game_surface, angle)
+        rotated_new_text_rect = rotated_new_text_surface.get_rect(center=self.name_game_surface_rect.center)
+
+        self.screen.blit(background_image, background_image_rect)
+
+        # Играть
+        self.screen.blit(self.btn_image, new_rect)
+        self.screen.blit(text_surface, text_rect)
+        # Выйти
+        self.screen.blit(self.exit_btn, exit_btn_new_rect)
+        self.screen.blit(exit_btn_surface, exit_btn_text_rect)
+
+        # Название игры
+        self.screen.blit(rotated_new_text_surface, rotated_new_text_rect)
+
+    def fade_out(self, duration):
+        fade_surface = pygame.Surface((self.width, self.height))
+        fade_surface.fill((0, 0, 0))
+        for alpha in range(0, 255):
+            fade_surface.set_alpha(alpha)
+            self.screen.blit(fade_surface, (0, 0))
+            pygame.display.flip()
+            pygame.time.delay(int(duration / 255))
+
+    def fade_in(self, duration):
+        fade_surface = pygame.Surface((self.width, self.height))
+        fade_surface.fill((0, 0, 0))
+        for alpha in range(255, -1, -1):
+            fade_surface.set_alpha(alpha)
+            self.screen.blit(fade_surface, (0, 0))
+            pygame.display.flip()
+            pygame.time.delay(int(duration / 255))
+
+    def old_map(self):
+        screen = self.screen
+        board = self.board
+        player = self.player
+        monsters_group = pygame.sprite.Group()
+        all_monster = [Bee(board, x=6, y=6, default_damage=4), Bat(board, x=0, y=4, default_damage=10)]
+        monster = Dummy(board, 2, 3, hp=100, default_damage=0,
+                        sheet=pygame.image.load('./sprites/monsters_sp/dummy_sp/dummy_spritesheet.png'),
+                        columns=3, rows=1)
+        slime = Slime(board, x=8, y=8)
+        all_monster.append(monster)
+        all_monster.append(slime)
+
+        chest_sps = [
+            LootChest(board, x=4, y=4, rarity=2),
+            LootChest(board, x=4, y=5, rarity=3),
+            ArmorChest(board, x=4, y=6),
+            InfinityChest(board, x=2, y=2, rarity=3)
+        ]
+        running = True
+
+        while running:
+            all_monster = [monster for monster in all_monster if not monster.is_dead]
+            if player.action_count <= 0:
+                [i.attack_damage(player) for i in all_monster]
+                player.action_count = player.action_const
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1 and not player.inventory.is_open:
+                        board.get_cell(event.pos)
+                    elif event.button == 1 and player.inventory.is_open:
+                        for slot in player.inventory.slots + player.inventory.unic_slot:
+                            item = slot.item
+                            if item is not None and item.rect.topleft[0] >= 0 and item.rect.topleft[1] >= 0:
+                                if item.rect.collidepoint(event.pos):
+                                    item.on_click(player)
+                                elif item.button_rect.collidepoint(event.pos) and item.open_stats and not item.is_equip:
+                                    player.inventory.equip_item(slot)
+                                elif item.button_rect.collidepoint(event.pos) and item.open_stats and item.is_equip:
+                                    player.inventory.un_equip_item(slot)
+
+                if event.type == pygame.KEYDOWN and not player.inventory.is_open and player.action_count:  # Обработка нажатия клавиш
+                    keys = pygame.key.get_pressed()
+                    player.update(keys, screen)
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_i:  # Открытие инвентаря по нажатию клавиши 'I'
+                        player.open_inventory()
+            screen.fill((0, 0, 0))
+            board.render(screen)
+
+            if player.fight_mode:
+                player.fight_cell(screen)
+
+            screen.blit(player.image, player.rect)
+            for chest in chest_sps:
+                screen.blit(chest.image, chest.rect)
+
+            if all_monster:
+                for i in all_monster:
+                    i.update(screen)
+                for i in all_monster:
+                    if not i.is_dead:
+                        screen.blit(i.image, i.rect)
+                        i.render_stats(screen)
+
+            player.render_stats(screen)  # Рендерим статистику игрока
+            player.inventory.draw(screen, player)
+
+            if player.inventory.is_open:
+                for slot in player.inventory.slots + player.inventory.unic_slot:
+                    item = slot.item
+                    if item is not None:
+                        item.stats_update(screen)
+
+            all_monster = [monster for monster in all_monster if not monster.is_dead]
+
+
+
+            pygame.display.flip()
+
+
+        pygame.quit()
+
+    def menu(self):
         running = True
 
         self.board = Board(10, 10)
         self.player = Player(self.board)
 
-        while running:
-            screen.fill((0, 0, 0))
+        pygame.mixer.music.load('misc/menu_music/undertale_once.mp3')
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(0.1)
 
+        start_play = False
+
+
+        while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if play.btn_rect.collidepoint(mouse_pos):  # Проверяем, попадает ли курсор в область кнопки
+                        start_play = True
+                        running = False
+                        pygame.mixer.music.stop()
+                        play.fade_out(2000)
+                        break
+                    if play.exit_btn_rect.collidepoint(mouse_pos):  # Проверяем, попадает ли курсор в область кнопки
+                        exit()
+            play.load_menu()
 
             pygame.display.flip()
+        if start_play:
+            self.old_map()
 
 
-def old_map():
-    check_db()
-    pygame.init()
-    fps = 60
-    SIZE = width, height = 1200, 800
-    screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption("Unnamed Game")
-    board = Board(10, 10)
-    player = Player(board)
-    monsters_group = pygame.sprite.Group()
-    all_monster = [Bee(board, x=6, y=6, default_damage=4), Bat(board, x=0, y=4, default_damage=10)]
-    monster = Dummy(board, 2, 3, hp=100, default_damage=0,
-                    sheet=pygame.image.load('./sprites/monsters_sp/dummy_sp/dummy_spritesheet.png'),
-                    columns=3, rows=1)
-    slime = Slime(board, x=8, y=8)
-    all_monster.append(monster)
-    all_monster.append(slime)
-
-    chest_sps = [
-        LootChest(board, x=4, y=4, rarity=2),
-        LootChest(board, x=4, y=5, rarity=3),
-        ArmorChest(board, x=4, y=6),
-        InfinityChest(board, x=2, y=2, rarity=3)
-    ]
-    running = True
-
-    while running:
-        all_monster = [monster for monster in all_monster if not monster.is_dead]
-        if player.action_count <= 0:
-            [i.attack_damage(player) for i in all_monster]
-            player.action_count = player.action_const
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and not player.inventory.is_open:
-                    board.get_cell(event.pos)
-                elif event.button == 1 and player.inventory.is_open:
-                    for slot in player.inventory.slots + player.inventory.unic_slot:
-                        item = slot.item
-                        if item is not None and item.rect.topleft[0] >= 0 and item.rect.topleft[1] >= 0:
-                            if item.rect.collidepoint(event.pos):
-                                item.on_click(player)
-                            elif item.button_rect.collidepoint(event.pos) and item.open_stats and not item.is_equip:
-                                player.inventory.equip_item(slot)
-                            elif item.button_rect.collidepoint(event.pos) and item.open_stats and item.is_equip:
-                                player.inventory.un_equip_item(slot)
-
-            if event.type == pygame.KEYDOWN and not player.inventory.is_open and player.action_count:  # Обработка нажатия клавиш
-                keys = pygame.key.get_pressed()
-                player.update(keys, screen)
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_i:  # Открытие инвентаря по нажатию клавиши 'I'
-                    player.open_inventory()
-        screen.fill((0, 0, 0))
-        board.render(screen)
-
-        if player.fight_mode:
-            player.fight_cell(screen)
-
-        screen.blit(player.image, player.rect)
-        for chest in chest_sps:
-            screen.blit(chest.image, chest.rect)
-
-        if all_monster:
-            for i in all_monster:
-                i.update(screen)
-            for i in all_monster:
-                if not i.is_dead:
-                    screen.blit(i.image, i.rect)
-                    i.render_stats(screen)
-
-        player.render_stats(screen)  # Рендерим статистику игрока
-        player.inventory.draw(screen, player)
-
-        if player.inventory.is_open:
-            for slot in player.inventory.slots + player.inventory.unic_slot:
-                item = slot.item
-                if item is not None:
-                    item.stats_update(screen)
-
-        all_monster = [monster for monster in all_monster if not monster.is_dead]
-
-        pygame.display.flip()
-
-    pygame.quit()
 if __name__ == '__main__':
     play = Play()
     play.menu()
