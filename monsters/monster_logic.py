@@ -336,6 +336,49 @@ class Bee(Monster, Animated):
 
         self.random_move_chance = 0.2
 
+    def attack_damage(self, player, random_move_chance=0.5):
+        search_close_player = self.fight_cell(player)
+        old = ()
+        new = ()
+
+        if search_close_player:
+            player.taking_damage(self.damage)
+        elif random.random() < random_move_chance:
+            print('#' * 10)
+            directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Вверх, вниз, влево, вправо
+            random.shuffle(directions)  # Перемешиваем направления для случайного выбора
+
+            for direction in directions:
+                x, y = self.board.get_cell((self.rect.x, self.rect.y))
+                print('Старая позиция', y, x)
+                old = (y, x)
+                new_y = y + direction[0]
+                new_x = x + direction[1]
+                # Проверяем границы и проходимость клетки
+                if 0 <= new_y < self.board.height and 0 <= new_x < self.board.width:
+                    if self.board.board[new_y][new_x] == 0:  # Проверяем, что клетка проходимая
+                        self.set_rect(new_x, new_y)  # Перемещаемся
+                        new = (new_y, new_x)
+                        print(f"Монстр переместился в случайную клетку: {(new_y, new_x)}")
+                        self.update_direction((new[0] - old[0], new[1] - old[1]))
+                        return True
+        else:
+            x, y = self.board.get_cell((self.rect.x, self.rect.y))
+            player_x, player_y = self.board.get_cell((player.rect.x, player.rect.y))
+            old = (y, x)
+            path_to_player = self.find_shortest_path((y, x), (player_y, player_x), player)
+            print(f"Текущая позиция монстра: {(y, x)}, Позиция игрока: {(player_y, player_x)}")
+            print(f"Найденный путь: {path_to_player}")
+            print("Monster", {self.__repr__()})
+
+            if path_to_player:
+                x, y = path_to_player[1]
+                new = (x, y)
+                self.set_rect(y, x)
+                direction_to_player = (new[0] - old[0], new[1] - old[1])
+                self.update_direction(direction_to_player)
+
+
     def update_direction(self, direction):
         if direction == (-1, 0):  # Вверх
             self.need_load = self.up

@@ -159,6 +159,7 @@ class Play:
             xp_cost = random.randint(1, 4 + self.player.lvl)
             self.all_monster.append(monster(board=self.board,
                                             hp=hp,
+                                            xp_cost=xp_cost,
                                             x=x,
                                             y=y,
                                             default_damage=damage,
