@@ -105,6 +105,10 @@ class Play:
         self.speed = 0.0015  # Скорость анимации
         self.start_time = pygame.time.get_ticks()
 
+        # Посхалка Owl
+        self.owl_sound_last = 0
+        self.sound_cooldown = 60000
+
         # button menu
         self.btn_image = pygame.image.load('sprites/menu/green_btn.png').convert_alpha()
         self.btn_rect = self.btn_image.get_rect(center=(self.width // 2, self.height // 2))
@@ -130,10 +134,58 @@ class Play:
         music.set_volume(volume)
         return music
 
-    def new_wave(self):
+    def render_wave(self):
+        count_wave = self.und_font.render(f'Волна {self.board.play.wave}', True, 'WHITE')
+        self.screen.blit(count_wave, (920, 10, 20, 10))
+
+    def new_wave(self, use_anim=False):
         self.wave += 1
         self.get_monsters()
         self.get_chest()
+        if use_anim:
+            self.animate_wave_text()
+
+    def animate_wave_text(self):
+        text = self.font.render(f"Волна {self.wave}", True, (255, 255, 255))
+        text_scale = 1.0
+        scale_speed = 0.02
+        max_scale = 4.5
+        clock = pygame.time.Clock()
+
+        background_image = pygame.image.load('sprites/map/wave_change.jpg').convert_alpha()
+        background_image = pygame.transform.scale(background_image, (self.width, self.height))
+        background_image_rect = background_image.get_rect()
+
+        wave_sound = pygame.mixer.Sound('misc/sound_effect/wave_change_3.wav')
+        wave_sound.set_volume(0.1)
+        wave_sound.play()
+
+        running = True
+        while running:
+
+            text_scale += scale_speed
+
+            if text_scale >= max_scale:
+                text_scale = max_scale
+                running = False
+
+            self.screen.blit(background_image, background_image_rect)
+
+            scaled_text = pygame.transform.scale(text,
+                                                 (int(text.get_width() * text_scale),
+                                                  int(text.get_height() * text_scale)))
+
+            text_rect = scaled_text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2))
+            self.screen.blit(scaled_text, text_rect)
+
+            pygame.display.flip()
+            clock.tick(60)
+
+        while wave_sound.get_num_channels() > 0:
+            pygame.time.delay(10)
+
+        wave_sound.stop()
+
 
     def random_pos(self):
         x = random.randint(0, self.board.width - 1)
@@ -177,6 +229,15 @@ class Play:
                                         rarity=rarity))
 
     def load_menu(self):
+        current_time = pygame.time.get_ticks()
+        sound = pygame.mixer.Sound('misc/menu_music/owl.wav')
+        sound.set_volume(0.1)
+
+        if random.random() < 0.001 and (current_time - self.owl_sound_last) > self.sound_cooldown:
+            sound.play()
+            self.owl_sound_last = current_time
+
+
         background_image = pygame.image.load('sprites/menu/background.png').convert_alpha()
         background_image = pygame.transform.scale(background_image, (self.width, self.height))
         background_image_rect = background_image.get_rect()
@@ -234,9 +295,7 @@ class Play:
         board = self.board
         board.play = self
         player = self.player
-
         self.new_wave()
-
         running = True
 
         while running:
@@ -262,7 +321,7 @@ class Play:
                                 elif item.button_rect.collidepoint(event.pos) and item.open_stats and item.is_equip:
                                     player.inventory.un_equip_item(slot)
 
-                if event.type == pygame.KEYDOWN and not player.inventory.is_open and player.action_count:  # Обработка нажатия клавиш
+                if event.type == pygame.KEYDOWN and not player.inventory.is_open and player.action_count:
                     keys = pygame.key.get_pressed()
                     player.update(keys, screen)
 
@@ -287,10 +346,13 @@ class Play:
                         screen.blit(i.image, i.rect)
                         i.render_stats(screen)
             else:
-                self.new_wave()
+                pygame.mixer.stop()
+                self.chest_sps = []
+                self.new_wave(use_anim=True)
 
             player.render_stats(screen)  # Рендерим статистику игрока
             player.inventory.draw(screen, player)
+            self.render_wave()
 
             if player.inventory.is_open:
                 for slot in player.inventory.slots + player.inventory.unic_slot:
@@ -301,8 +363,6 @@ class Play:
             self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
 
             pygame.display.flip()
-
-        pygame.quit()
 
     def menu(self):
         running = True

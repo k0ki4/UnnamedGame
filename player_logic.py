@@ -58,12 +58,19 @@ class Player(pygame.sprite.Sprite):
 
         self.is_dead = False
 
+        # sound
+        self.step = pygame.mixer.Sound('misc/sound_effect/player_move_2.wav')
+        self.step.set_volume(0.01)
+        self.level_up = pygame.mixer.Sound('misc/sound_effect/player_lvl_up2.wav')
+
+
     def get_xp(self, count):
         self.xp += count
         if self.xp >= self.xp_for_next:
             self.xp -= self.xp_for_next
             self.lvl += 1
             self.xp_for_next += 5
+            self.level_up.play()
 
     def calc_stats(self):
         self.damage = 0
@@ -168,9 +175,6 @@ class Player(pygame.sprite.Sprite):
         screen.blit(stats_imp_scaled, stats_rect.topleft)
         screen.blit(stats_imp_scaled2, stats_rect2.topleft)
 
-        count_wave = self.board.play.und_font.render(f'Волна {self.board.play.wave}', True, 'WHITE')
-        screen.blit(count_wave, (920, 10, 20, 10))
-
         take_img = pygame.image.load("sprites/gui/use.png").convert_alpha()
         take_img = pygame.transform.scale(take_img, (60, 60))
         take_img_rect = pygame.Rect(845, 500, 60, 60)
@@ -235,24 +239,30 @@ class Player(pygame.sprite.Sprite):
                 self.board.board[y][x] = self
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
+                self.step.play()
             if keys[pygame.K_s]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (0, 1))
                 self.board.board[y][x] = self
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
+                self.step.play()
+
             if keys[pygame.K_a]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (-1, 0))
                 self.board.board[y][x] = self
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
+                self.step.play()
             if keys[pygame.K_d]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (1, 0))
                 self.board.board[y][x] = self
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
+                self.step.play()
+
             if keys[pygame.K_e]:
                 if self.radar_list:
                     for i in self.radar_list:
@@ -282,6 +292,7 @@ class Player(pygame.sprite.Sprite):
         return cord_x, cord_y
 
     def count_usage(self):
+        self.radar_list = [monster for monster in self.radar_list if isinstance(monster, Monster)]
         x, y = self.get_cell((self.rect.x, self.rect.y))
         direction = [
             (-1, 0),  # вверх
