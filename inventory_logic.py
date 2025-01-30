@@ -103,7 +103,7 @@ class Inventory:
         self.is_open = False  # Состояние инвентаря
 
         pygame.font.init()
-        self.font = pygame.font.SysFont('Arial', 20)
+        self.font = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 20)
 
         self.background_image = pygame.image.load("sprites/inventory/background.png").convert_alpha()
         self.background_image = pygame.transform.scale(self.background_image, (self.width, self.height))
@@ -195,6 +195,6 @@ class Inventory:
                 slot.draw(screen)
 
             xp = player.xp
-            text_xp = self.font.render(f"XP: {xp}/10", True, (0, 255, 255))
+            text_xp = self.font.render(f"XP: {xp}/{self.player.xp_for_next}", True, (0, 255, 255))
             text_rect = pygame.Rect((120, 290, 10, 10))
             screen.blit(text_xp, text_rect)

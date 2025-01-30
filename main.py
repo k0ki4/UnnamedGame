@@ -57,7 +57,6 @@ class Board:
                      self.cell_size, self.cell_size), 1
                 )
 
-
     def get_cell(self, mouse_pos):
         player = self.get_player()
         cell_x = (mouse_pos[0] - self.left) // self.cell_size
@@ -65,7 +64,7 @@ class Board:
         if 0 <= cell_x <= self.width and 0 <= cell_y <= self.height:
             if player.fight_mode and isinstance(self.board[cell_y][cell_x], (Monster,)) and self.board[cell_y][
                 cell_x] in player.radar_list:
-                player.get_damage(self.board[cell_y][cell_x])
+                    player.get_damage(self.board[cell_y][cell_x])
 
             return cell_x, cell_y
         return None
@@ -126,8 +125,6 @@ class Play:
         self.all_monster = []
         self.chest_sps = []
 
-
-
     def new_sound(self, path_to_music, duration=None, volume=None):
         music = pygame.mixer.Sound(path_to_music)
         music.set_volume(volume)
@@ -136,6 +133,7 @@ class Play:
     def new_wave(self):
         self.wave += 1
         self.get_monsters()
+        self.get_chest()
 
     def random_pos(self):
         x = random.randint(0, self.board.width - 1)
@@ -145,7 +143,6 @@ class Play:
         return y, x
 
     def get_monsters(self):
-        result_mobs = []
         count = random.randint(2, self.wave + 1)
         monsteres_list = [Slime, Bee, Bat]
 
@@ -153,10 +150,10 @@ class Play:
             random.shuffle(monsteres_list)
             monster = random.choice(monsteres_list)
             y, x = self.random_pos()
-            damage = random.randint(1, 2 * self.wave + self.player.lvl)
-            armor = random.randint(1, 2 * self.wave + self.player.lvl)
-            hp = random.randint(1, 2 * self.wave + self.player.lvl + 2)
-            xp_cost = random.randint(1, 4 + self.player.lvl)
+            damage = random.randint(4, 6 * self.wave + self.player.lvl)
+            armor = random.randint(4, 6 * self.wave + self.player.lvl)
+            hp = random.randint(10, 7 * self.wave + self.player.lvl + 2)
+            xp_cost = random.randint(1, 6 + self.player.lvl)
             self.all_monster.append(monster(board=self.board,
                                             hp=hp,
                                             xp_cost=xp_cost,
@@ -165,8 +162,19 @@ class Play:
                                             default_damage=damage,
                                             default_armor=armor))
 
+    def get_chest(self):
+        count = random.randint(2, self.wave + 1)
+        chest_list = [LootChest]
 
-
+        for i in range(count):
+            random.shuffle(chest_list)
+            chest = random.choice(chest_list)
+            y, x = self.random_pos()
+            rarity = random.randint(1, 3)
+            self.chest_sps.append(chest(board=self.board,
+                                        x=x,
+                                        y=y,
+                                        rarity=rarity))
 
     def load_menu(self):
         background_image = pygame.image.load('sprites/menu/background.png').convert_alpha()
@@ -202,7 +210,6 @@ class Play:
 
         # Название игры
         self.screen.blit(rotated_new_text_surface, rotated_new_text_rect)
-
 
     def fade_out(self, duration):
         fade_surface = pygame.Surface((self.width, self.height))
@@ -293,10 +300,7 @@ class Play:
 
             self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
 
-
-
             pygame.display.flip()
-
 
         pygame.quit()
 
@@ -311,7 +315,6 @@ class Play:
         pygame.mixer.music.set_volume(0.1)
 
         start_play = False
-
 
         while running:
             for event in pygame.event.get():
