@@ -21,6 +21,7 @@ class Player(pygame.sprite.Sprite):
 
         self.lvl = 1
         self.xp = 0
+        self.xp_for_next = 10
 
         self.default_damage = default_damage
         self.default_armor = default_armor
@@ -28,8 +29,9 @@ class Player(pygame.sprite.Sprite):
         self.damage = 0
         self.max_hp = hp
         self.hp = hp
-        self.action_const = 4
-        self.action_count = 4
+        self.action_const = 3
+        self.action_count = 3
+
 
         self.image = pygame.Surface((board.cell_size, board.cell_size))
         self.image.fill("ORANGE")
@@ -58,9 +60,10 @@ class Player(pygame.sprite.Sprite):
 
     def get_xp(self, count):
         self.xp += count
-        if self.xp >= 10:
-            self.xp -= 10
+        if self.xp >= self.xp_for_next:
+            self.xp -= self.xp_for_next
             self.lvl += 1
+            self.xp_for_next += 5
 
     def calc_stats(self):
         self.damage = 0
@@ -164,6 +167,9 @@ class Player(pygame.sprite.Sprite):
 
         screen.blit(stats_imp_scaled, stats_rect.topleft)
         screen.blit(stats_imp_scaled2, stats_rect2.topleft)
+
+        count_wave = self.board.play.und_font.render(f'Волна {self.board.play.wave}', True, 'WHITE')
+        screen.blit(count_wave, (920, 10, 20, 10))
 
         take_img = pygame.image.load("sprites/gui/use.png").convert_alpha()
         take_img = pygame.transform.scale(take_img, (60, 60))

@@ -37,7 +37,7 @@ class Monster(pygame.sprite.Sprite):
         self.image.fill("GREEN")
         self.rect = self.image.get_rect()
         self.set_rect(x, y)
-
+        self.random_move_chance = 0.5
         self.last_move_time = 0
         self.move_delay = 0.5
 
@@ -143,7 +143,7 @@ class Monster(pygame.sprite.Sprite):
 
     def attack_damage(self, player, random_move_chance=0.5):
         search_close_player = self.fight_cell(player)
-
+        random_move_chance = self.random_move_chance
         if search_close_player:
             player.taking_damage(self.damage)
         elif random.random() < random_move_chance:
@@ -252,7 +252,8 @@ class Monster(pygame.sprite.Sprite):
 class Dummy(Monster):
     def __init__(self, board, x, y, sheet=None, columns=None, rows=None, *groups, hp=10, default_damage=1,
                  default_armor=1):
-        super().__init__(board, x=x, y=y, *groups, hp=hp, default_damage=default_damage, default_armor=default_armor)
+        super().__init__(board, x=x, y=y, *groups, hp=hp,
+                         default_damage=default_damage, default_armor=default_armor)
         self.frames = []
         self.cut_sheet(sheet, columns, rows)
         self.cur_frame = 0
@@ -322,8 +323,9 @@ class Bee(Monster, Animated):
     left = './sprites/monsters_sp/bee/left'
     down = './sprites/monsters_sp/bee/down'
 
-    def __init__(self, board, *groups, x, y, default_damage=5):
-        super().__init__(board, *groups, x=x, y=y, default_damage=default_damage)
+    def __init__(self, board, *groups, x, y, default_damage=5, default_armor=1, hp=10, xp_cost=10):
+        super().__init__(board, *groups, x=x, y=y, default_damage=default_damage, hp=hp,
+                         default_armor=default_armor, xp_cost=xp_cost)
         self.frames = []
         self.need_load = self.down
         self.load_frames()
@@ -332,50 +334,9 @@ class Bee(Monster, Animated):
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
 
-    def attack_damage(self, player, random_move_chance=0.3):
-        search_close_player = self.fight_cell(player)
-        old = ()
-        new = ()
-
-        if search_close_player:
-            player.taking_damage(self.damage)
-        elif random.random() < random_move_chance:
-            print('#' * 10)
-            directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Вверх, вниз, влево, вправо
-            random.shuffle(directions)  # Перемешиваем направления для случайного выбора
-
-            for direction in directions:
-                x, y = self.board.get_cell((self.rect.x, self.rect.y))
-                print('Старая позиция', y, x)
-                old = (y, x)
-                new_y = y + direction[0]
-                new_x = x + direction[1]
-                # Проверяем границы и проходимость клетки
-                if 0 <= new_y < self.board.height and 0 <= new_x < self.board.width:
-                    if self.board.board[new_y][new_x] == 0:  # Проверяем, что клетка проходимая
-                        self.set_rect(new_x, new_y)  # Перемещаемся
-                        new = (new_y, new_x)
-                        print(f"Монстр переместился в случайную клетку: {(new_y, new_x)}")
-                        self.update_direction((new[0] - old[0], new[1] - old[1]))
-                        return True
-        else:
-            x, y = self.board.get_cell((self.rect.x, self.rect.y))
-            player_x, player_y = self.board.get_cell((player.rect.x, player.rect.y))
-            old = (y, x)
-            path_to_player = self.find_shortest_path((y, x), (player_y, player_x), player)
-            print(f"Текущая позиция монстра: {(y, x)}, Позиция игрока: {(player_y, player_x)}")
-            print(f"Найденный путь: {path_to_player}")
-            print("Monster", {self.__repr__()})
-
-            if path_to_player:
-                x, y = path_to_player[1]
-                new = (x, y)
-                self.set_rect(y, x)
-                direction_to_player = (new[0] - old[0], new[1] - old[1])
-                self.update_direction(direction_to_player)
+        self.random_move_chance = 0.2
 
     def update_direction(self, direction):
-        print('Входящий поворот', direction)
         if direction == (-1, 0):  # Вверх
             self.need_load = self.up
         elif direction == (1, 0):  # Вниз
@@ -401,8 +362,9 @@ class Slime(Monster, Animated):
     left = './sprites/monsters_sp/slime/left'
     down = './sprites/monsters_sp/slime/down'
 
-    def __init__(self, board, *groups, x, y, default_damage=5):
-        super().__init__(board, *groups, x=x, y=y, default_damage=default_damage)
+    def __init__(self, board, *groups, x, y, default_damage=5, default_armor=1, hp=10, xp_cost=10):
+        super().__init__(board, *groups, x=x, y=y, default_damage=default_damage, hp=hp,
+                         default_armor=default_armor, xp_cost=xp_cost)
         self.frames = []
         self.need_load = self.down
         self.load_frames()
@@ -480,8 +442,9 @@ class Bat(Monster, Animated):
     left = './sprites/monsters_sp/bat/left'
     down = './sprites/monsters_sp/bat/down'
 
-    def __init__(self, board, *groups, x, y, default_damage=5):
-        super().__init__(board, *groups, x=x, y=y, default_damage=default_damage)
+    def __init__(self, board, *groups, x, y, default_damage=5, default_armor=1, hp=10, xp_cost=10):
+        super().__init__(board, *groups, x=x, y=y, default_damage=default_damage, hp=hp,
+                         default_armor=default_armor, xp_cost=xp_cost)
         self.frames = []
         self.need_load = self.down
         self.load_frames()

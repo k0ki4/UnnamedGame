@@ -1,3 +1,5 @@
+import random
+
 from check_database import check_db
 from loot.chest import InfinityChest, ArmorChest
 from monsters.monster_logic import *
@@ -7,6 +9,7 @@ import pygame
 
 class Board:
     def __init__(self, width, height, padding=10):
+        self.play = None
         self.width = width
         self.height = height
         self.padding = padding
@@ -28,6 +31,9 @@ class Board:
         self.board = [[0] * width for _ in range(height)]
         self.left = padding
         self.top = padding
+
+    def get_play(self):
+        return self.play
 
     def set_view(self, left, top, cell_size):
         self.left = left
@@ -91,7 +97,6 @@ class Play:
         self.player = None
 
         self.width, self.height = 1200, 800
-        self.wave = 1
 
         self.font = pygame.font.Font(None, 36)
         self.und_font = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 46)
@@ -115,10 +120,52 @@ class Play:
         self.name_game_surface = self.und_large_font.render('UNNAMED GAME', True, (255, 255, 255))
         self.name_game_surface_rect = self.name_game_surface.get_rect(center=(self.width // 2, self.height // 2 - 200))
 
+        # StartPlay
+        self.wave = 0
+        self.old_chest = []
+        self.all_monster = []
+        self.chest_sps = []
+
+
+
     def new_sound(self, path_to_music, duration=None, volume=None):
         music = pygame.mixer.Sound(path_to_music)
         music.set_volume(volume)
         return music
+
+    def new_wave(self):
+        self.wave += 1
+        self.get_monsters()
+
+    def random_pos(self):
+        x = random.randint(0, self.board.width - 1)
+        y = random.randint(0, self.board.height - 1)
+        if self.board.board[y][x] != 0:
+            return self.random_pos()
+        return y, x
+
+    def get_monsters(self):
+        result_mobs = []
+        count = random.randint(2, self.wave + 1)
+        monsteres_list = [Slime, Bee, Bat]
+
+        for i in range(count):
+            random.shuffle(monsteres_list)
+            monster = random.choice(monsteres_list)
+            y, x = self.random_pos()
+            damage = random.randint(1, 2 * self.wave + self.player.lvl)
+            armor = random.randint(1, 2 * self.wave + self.player.lvl)
+            hp = random.randint(1, 2 * self.wave + self.player.lvl + 2)
+            xp_cost = random.randint(1, 4 + self.player.lvl)
+            self.all_monster.append(monster(board=self.board,
+                                            hp=hp,
+                                            x=x,
+                                            y=y,
+                                            default_damage=damage,
+                                            default_armor=armor))
+
+
+
 
     def load_menu(self):
         background_image = pygame.image.load('sprites/menu/background.png').convert_alpha()
@@ -155,6 +202,7 @@ class Play:
         # Название игры
         self.screen.blit(rotated_new_text_surface, rotated_new_text_rect)
 
+
     def fade_out(self, duration):
         fade_surface = pygame.Surface((self.width, self.height))
         fade_surface.fill((0, 0, 0))
@@ -176,28 +224,17 @@ class Play:
     def old_map(self):
         screen = self.screen
         board = self.board
+        board.play = self
         player = self.player
-        monsters_group = pygame.sprite.Group()
-        all_monster = [Bee(board, x=6, y=6, default_damage=4), Bat(board, x=0, y=4, default_damage=10)]
-        monster = Dummy(board, 2, 3, hp=100, default_damage=0,
-                        sheet=pygame.image.load('./sprites/monsters_sp/dummy_sp/dummy_spritesheet.png'),
-                        columns=3, rows=1)
-        slime = Slime(board, x=8, y=8)
-        all_monster.append(monster)
-        all_monster.append(slime)
 
-        chest_sps = [
-            LootChest(board, x=4, y=4, rarity=2),
-            LootChest(board, x=4, y=5, rarity=3),
-            ArmorChest(board, x=4, y=6),
-            InfinityChest(board, x=2, y=2, rarity=3)
-        ]
+        self.new_wave()
+
         running = True
 
         while running:
-            all_monster = [monster for monster in all_monster if not monster.is_dead]
+            self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
             if player.action_count <= 0:
-                [i.attack_damage(player) for i in all_monster]
+                [i.attack_damage(player) for i in self.all_monster]
                 player.action_count = player.action_const
 
             for event in pygame.event.get():
@@ -231,16 +268,18 @@ class Play:
                 player.fight_cell(screen)
 
             screen.blit(player.image, player.rect)
-            for chest in chest_sps:
+            for chest in self.chest_sps:
                 screen.blit(chest.image, chest.rect)
 
-            if all_monster:
-                for i in all_monster:
+            if self.all_monster:
+                for i in self.all_monster:
                     i.update(screen)
-                for i in all_monster:
+                for i in self.all_monster:
                     if not i.is_dead:
                         screen.blit(i.image, i.rect)
                         i.render_stats(screen)
+            else:
+                self.new_wave()
 
             player.render_stats(screen)  # Рендерим статистику игрока
             player.inventory.draw(screen, player)
@@ -251,7 +290,7 @@ class Play:
                     if item is not None:
                         item.stats_update(screen)
 
-            all_monster = [monster for monster in all_monster if not monster.is_dead]
+            self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
 
 
 
