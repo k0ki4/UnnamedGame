@@ -1,4 +1,5 @@
 import random
+import time
 
 from check_database import check_db
 from loot.chest import InfinityChest, ArmorChest
@@ -187,9 +188,6 @@ class Play:
 
             pygame.display.flip()
             clock.tick(60)
-
-        while wave_sound.get_num_channels() > 0:
-            pygame.time.delay(10)
 
         wave_sound.stop()
 

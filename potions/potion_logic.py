@@ -40,7 +40,7 @@ class Potion(pygame.sprite.Sprite):
         pygame.mixer.init()
 
         self.use_potion_sound = pygame.mixer.Sound('misc/sound_effect/potion_use.wav')
-        self.use_potion_sound.set_volume(0.04)
+        self.use_potion_sound.set_volume(0.1)
 
     def choose_effect(self):
         if isinstance(self.effect, str):
