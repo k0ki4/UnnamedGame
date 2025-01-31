@@ -128,6 +128,8 @@ class Play:
         self.old_chest = []
         self.all_monster = []
         self.chest_sps = []
+        self.backend_sound = pygame.mixer.Sound('misc/menu_music/undertale_core.mp3')
+        self.backend_sound.set_volume(0.1)
 
     def new_sound(self, path_to_music, duration=None, volume=None):
         music = pygame.mixer.Sound(path_to_music)
@@ -139,11 +141,16 @@ class Play:
         self.screen.blit(count_wave, (920, 10, 20, 10))
 
     def new_wave(self, use_anim=False):
+        pygame.mixer.pause()
+        for i in self.chest_sps:
+            i.delete()
+        self.chest_sps = []
         self.wave += 1
         self.get_monsters()
         self.get_chest()
         if use_anim:
             self.animate_wave_text()
+        pygame.mixer.unpause()
 
     def animate_wave_text(self):
         text = self.font.render(f"Волна {self.wave}", True, (255, 255, 255))
@@ -297,6 +304,7 @@ class Play:
         player = self.player
         self.new_wave()
         running = True
+        self.backend_sound.play(-1)
 
         while running:
             self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
@@ -345,9 +353,7 @@ class Play:
                     if not i.is_dead:
                         screen.blit(i.image, i.rect)
                         i.render_stats(screen)
-            else:
-                pygame.mixer.stop()
-                self.chest_sps = []
+            elif not self.all_monster and all([ch.is_open for ch in self.chest_sps]):
                 self.new_wave(use_anim=True)
 
             player.render_stats(screen)  # Рендерим статистику игрока

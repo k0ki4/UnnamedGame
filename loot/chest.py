@@ -34,7 +34,16 @@ class LootChest(pygame.sprite.Sprite):
         self.set_rect(x, y)
         self.is_open = False
         self.open_chest_sound = pygame.mixer.Sound('misc/sound_effect/open_chest.wav')
+        self.open_chest_sound.set_volume(0.09)
 
+    def delete(self):
+        self.kill()
+        for x in range(len(self.board.board)):
+            for y in range(len(self.board.board[x])):
+                if self.board.board[x][y] == self:
+                    self.board.board[x][y] = 0
+                    return True
+        return False
     def get_image_by_rarity(self):
         for i in range(1, 4):
             if i == self.rarity:

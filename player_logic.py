@@ -58,11 +58,15 @@ class Player(pygame.sprite.Sprite):
         self.is_dead = False
 
         # sound
-        self.step = pygame.mixer.Sound('misc/sound_effect/player_move_2.wav')
-        self.step.set_volume(0.1)
+        self.step = pygame.mixer.Sound('misc/sound_effect/action_move.wav')
+        self.step.set_volume(0.05)
         self.level_up = pygame.mixer.Sound('misc/sound_effect/player_lvl_up2.wav')
+        self.level_up.set_volume(0.5)
         self.hit_sound = pygame.mixer.Sound('misc/sound_effect/hit_mob.wav')
+        self.hit_sound.set_volume(0.5)
         self.hit_self = pygame.mixer.Sound('misc/sound_effect/Hit_player.wav')
+        self.hit_self.set_volume(0.7)
+
 
     def get_xp(self, count):
         self.xp += count
