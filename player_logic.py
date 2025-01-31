@@ -32,7 +32,6 @@ class Player(pygame.sprite.Sprite):
         self.action_const = 3
         self.action_count = 3
 
-
         self.image = pygame.Surface((board.cell_size, board.cell_size))
         self.image.fill("ORANGE")
         self.rect = self.image.get_rect()  # Получаем прямоугольник для спрайта
@@ -60,9 +59,10 @@ class Player(pygame.sprite.Sprite):
 
         # sound
         self.step = pygame.mixer.Sound('misc/sound_effect/player_move_2.wav')
-        self.step.set_volume(0.01)
+        self.step.set_volume(0.1)
         self.level_up = pygame.mixer.Sound('misc/sound_effect/player_lvl_up2.wav')
-
+        self.hit_sound = pygame.mixer.Sound('misc/sound_effect/hit_mob.wav')
+        self.hit_self = pygame.mixer.Sound('misc/sound_effect/Hit_player.wav')
 
     def get_xp(self, count):
         self.xp += count
@@ -83,7 +83,7 @@ class Player(pygame.sprite.Sprite):
         equip_armor = [slot.item.protect for slot in self.inventory.unic_slot if slot.item is not None and
                        isinstance(slot, (HelmetSlot, ChestplateSlot, LeggingsSlot))]
         equip_acs = [slot.item.buff_hp for slot in self.inventory.unic_slot if slot.item is not None and
-                       isinstance(slot, AccessoriesItemSlot)]
+                     isinstance(slot, AccessoriesItemSlot)]
         if equip_armor:
             self.armor += sum(equip_armor)
         if equip_weapon:
@@ -136,7 +136,7 @@ class Player(pygame.sprite.Sprite):
         step_image = pygame.image.load('sprites/gui/step.png').convert_alpha()
         step_image_rect = pygame.Rect(825, 250, 70, 20)
         step_image = pygame.transform.scale(step_image, (step_image_rect.width,
-                                                       step_image_rect.height))
+                                                         step_image_rect.height))
 
         step_text = self.font.render(f'Ходов: {self.action_count}', True, 'RED')
         screen.blit(step_image, step_image_rect)
@@ -362,17 +362,18 @@ class Player(pygame.sprite.Sprite):
         self.last_fight_render_time = current_time
 
     def get_damage(self, enemy):
+        self.hit_sound.play()
         res = enemy.get_damage(self)
         if res is not None:
             self.action_count -= 1
 
-
-
     def taking_damage(self, damage):
         if damage <= self.armor:
             self.hp -= 1
+            self.hit_self.play()
         elif damage > self.armor:
             self.hp -= (damage - self.armor)
+            self.hit_self.play()
         if self.hp <= 0:
             self.dead_player()
 

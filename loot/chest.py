@@ -33,6 +33,7 @@ class LootChest(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.set_rect(x, y)
         self.is_open = False
+        self.open_chest_sound = pygame.mixer.Sound('misc/sound_effect/open_chest.wav')
 
     def get_image_by_rarity(self):
         for i in range(1, 4):
@@ -54,6 +55,7 @@ class LootChest(pygame.sprite.Sprite):
 
     def toggle_chest(self, player):
         if not self.is_open:
+            self.open_chest_sound.play()
             count_loot = random.randint(1, 2)
             for i in range(count_loot):
                 item = self.get_item_for_rarity()
