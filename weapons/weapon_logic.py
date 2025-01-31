@@ -66,8 +66,8 @@ class Weapon(pygame.sprite.Sprite):
             rect_frame2 = frame.get_rect(topleft=(310, 120))
 
             pygame.font.init()
-            font_medium = pygame.font.SysFont('Arial', 20)
-            font_large = pygame.font.SysFont('Arial', 30)
+            font_medium = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 20)
+            font_large = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 30)
 
             name = font_large.render(f"{self.name}", True, self.color_rarity[self.rarity])  # Белый текст
             damage_text = font_medium.render(f"Урон: {self.damage}", True, (255, 255, 255))

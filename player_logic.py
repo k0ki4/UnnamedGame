@@ -50,7 +50,7 @@ class Player(pygame.sprite.Sprite):
         self.fight_render_time_delay = 0.5
 
         pygame.font.init()
-        self.font = pygame.font.SysFont('Arial', 14)
+        self.font = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 14)
 
         self.monster_image = pygame.image.load("sprites/inventory/enemy_cell.png").convert_alpha()
         self.normal_image = pygame.image.load("sprites/inventory/empty_cell.png").convert_alpha()
@@ -62,7 +62,7 @@ class Player(pygame.sprite.Sprite):
         self.step.set_volume(0.05)
         self.level_up = pygame.mixer.Sound('misc/sound_effect/player_lvl_up2.wav')
         self.level_up.set_volume(0.5)
-        self.hit_sound = pygame.mixer.Sound('misc/sound_effect/hit_mob.wav')
+        self.hit_sound = pygame.mixer.Sound('misc/sound_effect/hit_damage.mp3')
         self.hit_sound.set_volume(0.5)
         self.hit_self = pygame.mixer.Sound('misc/sound_effect/Hit_player.wav')
         self.hit_self.set_volume(0.7)
@@ -200,12 +200,12 @@ class Player(pygame.sprite.Sprite):
 
         open_inventory = pygame.image.load("sprites/gui/use.png").convert_alpha()
         open_inventory = pygame.transform.scale(open_inventory, (60, 60))
-        open_inventory_rect = pygame.Rect(970, 500, 60, 60)
+        open_inventory_rect = pygame.Rect(845, 700, 60, 60)
         screen.blit(open_inventory, open_inventory_rect)
 
         open_inventory_text = self.font.render("Открыть инвентарь", True, (255, 255, 255))  # Белый текст
         open_inventory_text_button = self.font.render("I", True, (255, 255, 255))  # Белый текст
-        screen.blit(open_inventory_text, (950, 470))
+        screen.blit(open_inventory_text, (830, 680))
 
         text_width, text_height = open_inventory_text_button.get_size()
         text_x = open_inventory_rect.x + (open_inventory_rect.width - text_width) // 2
@@ -214,7 +214,7 @@ class Player(pygame.sprite.Sprite):
 
         take_text_take = self.font.render("Взаимодействовать", True, (255, 255, 255))  # Белый текст
         take_text = self.font.render("E", True, (255, 255, 255))  # Белый текст
-        screen.blit(take_text_take, (820, 470))
+        screen.blit(take_text_take, (830, 480))
         if self.radar_list:
             for i in self.radar_list:
                 if isinstance(i, LootChest):
@@ -366,9 +366,9 @@ class Player(pygame.sprite.Sprite):
         self.last_fight_render_time = current_time
 
     def get_damage(self, enemy):
-        self.hit_sound.play()
         res = enemy.get_damage(self)
         if res is not None:
+            self.hit_sound.play()
             self.action_count -= 1
 
     def taking_damage(self, damage):

@@ -195,6 +195,6 @@ class Inventory:
                 slot.draw(screen)
 
             xp = player.xp
-            text_xp = self.font.render(f"XP: {xp}/{self.player.xp_for_next}", True, (0, 255, 255))
+            text_xp = self.font.render(f"Опыт: {xp}/{self.player.xp_for_next}", True, (0, 255, 255))
             text_rect = pygame.Rect((120, 290, 10, 10))
             screen.blit(text_xp, text_rect)
