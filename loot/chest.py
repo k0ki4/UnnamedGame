@@ -71,10 +71,10 @@ class LootChest(pygame.sprite.Sprite):
                 print(f'Редкость: {self.rarity}')
                 print('Сундук открыт')
                 print(f'Редкость предмета: {item.rarity}')
-                if self.rarity > item.rarity and not isinstance(item, Potion):
+                if not isinstance(item, Potion):
                     bonus = random.randint(1, 5)
                     item.get_bonus(bonus)
-                    print(f'Бонус к оружию +{bonus}')
+                    print(f'Бонус к оружию +{bonus + self.board.get_play().wave}')
                     item.get_lvl_bonus(player.lvl)
                     print(f'Бонус от лвл-а {player.lvl}')
                 player.inventory.add_item(item)

@@ -1,6 +1,7 @@
 import sqlite3
 
 import pygame
+from Tools.demo.spreadsheet import center
 
 weapons_list = [
     {"name": "Меч", "damage": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/sword/sword_r1.png"},
@@ -30,6 +31,7 @@ class Weapon(pygame.sprite.Sprite):
         self.lvl_bonus = 0
 
         self.button_rect = pygame.Rect((325, 290, 150, 70))
+        self.drop_button_rect = pygame.Rect((500, 290, 70, 70))
 
         self.image = pygame.image.load(self.sprite_path)
         self.rect = self.image.get_rect()
@@ -91,9 +93,21 @@ class Weapon(pygame.sprite.Sprite):
             screen.blit(bonus_text, (cord_text_x, 230))
             screen.blit(lvl_text, (cord_text_x, 260))
 
+            drop_button_text = font_medium.render("Выбросить", True, (255, 255, 255))
+            text_width, text_height = drop_button_text.get_size()
+            text_x = self.drop_button_rect.x + (self.drop_button_rect.width - text_width) // 2
+            text_y = self.drop_button_rect.y + (self.drop_button_rect.height - text_height) // 2
+            screen.blit(drop_button_text, (text_x, text_y))
+
             if not self.is_equip:
                 screen.blit(frame_button, self.button_rect)
                 screen.blit(button_text, text_rect)
+
+                drop_button_text = font_medium.render("Выбросить", True, (255, 255, 255))
+                text_width, text_height = drop_button_text.get_size()
+                text_x = self.drop_button_rect.x + (self.drop_button_rect.width - text_width) // 2
+                text_y = self.drop_button_rect.y + (self.drop_button_rect.height - text_height) // 2
+                screen.blit(drop_button_text, (text_x, text_y))
 
             else:
                 button_text = font_medium.render("Снять", True, (255, 255, 255))

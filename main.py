@@ -124,6 +124,8 @@ class Play:
         self.name_game_surface = self.und_large_font.render('UNNAMED GAME', True, (255, 255, 255))
         self.name_game_surface_rect = self.name_game_surface.get_rect(center=(self.width // 2, self.height // 2 - 200))
 
+        self.active_sounds = []
+
         # StartPlay
         self.wave = 0
         self.old_chest = []
@@ -132,10 +134,14 @@ class Play:
         self.backend_sound = pygame.mixer.Sound('misc/menu_music/undertale_core.mp3')
         self.backend_sound.set_volume(0.1)
 
-    def new_sound(self, path_to_music, duration=None, volume=None):
-        music = pygame.mixer.Sound(path_to_music)
-        music.set_volume(volume)
-        return music
+    def play_sound(self, sound):
+        sound.play()
+        self.active_sounds.append(sound)
+
+    def check_active_sounds(self):
+        for sound in self.active_sounds[:]:
+            if not sound.get_busy():
+                self.active_sounds.remove(sound)
 
     def render_wave(self):
         count_wave = self.und_font.render(f'Волна {self.board.play.wave}', True, 'WHITE')
@@ -295,7 +301,7 @@ class Play:
             pygame.display.flip()
             pygame.time.delay(int(duration / 255))
 
-    def old_map(self):
+    def main_game(self):
         screen = self.screen
         board = self.board
         board.play = self
@@ -324,6 +330,9 @@ class Play:
                                     item.on_click(player)
                                 elif item.button_rect.collidepoint(event.pos) and item.open_stats and not item.is_equip:
                                     player.inventory.equip_item(slot)
+                                elif item.drop_button_rect.collidepoint(
+                                        event.pos) and item.open_stats and not item.is_equip:
+                                    player.inventory.drop(slot)
                                 elif item.button_rect.collidepoint(event.pos) and item.open_stats and item.is_equip:
                                     player.inventory.un_equip_item(slot)
 
@@ -334,7 +343,8 @@ class Play:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_i:  # Открытие инвентаря по нажатию клавиши 'I'
                         player.open_inventory()
-            screen.fill((0, 0, 0))
+
+            self.screen.fill('#32221a')
             board.render(screen)
 
             if player.fight_mode:
@@ -351,7 +361,8 @@ class Play:
                     if not i.is_dead:
                         screen.blit(i.image, i.rect)
                         i.render_stats(screen)
-            elif not self.all_monster and all([ch.is_open for ch in self.chest_sps]):
+
+            if not self.all_monster and all([ch.is_open for ch in self.chest_sps]) and len(self.active_sounds) <= 1:
                 self.new_wave(use_anim=True)
 
             player.render_stats(screen)  # Рендерим статистику игрока
@@ -365,7 +376,7 @@ class Play:
                         item.stats_update(screen)
 
             self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
-
+            self.check_active_sounds()
             pygame.display.flip()
 
     def menu(self):
@@ -398,7 +409,7 @@ class Play:
 
             pygame.display.flip()
         if start_play:
-            self.old_map()
+            self.main_game()
 
 
 if __name__ == '__main__':

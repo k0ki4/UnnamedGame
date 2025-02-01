@@ -121,6 +121,14 @@ class Inventory:
         slot.item = None
         self.add_item(item)
 
+    def drop(self, slot):
+        slot = slot
+        item = slot.item
+        item.is_equip = False
+        item.open_stats = False
+        item.kill()
+        slot.item = None
+
     def equip_item(self, slot):
         slot = slot
         item = slot.item
@@ -196,5 +204,5 @@ class Inventory:
 
             xp = player.xp
             text_xp = self.font.render(f"Опыт: {xp}/{self.player.xp_for_next}", True, (0, 255, 255))
-            text_rect = pygame.Rect((120, 290, 10, 10))
+            text_rect = pygame.Rect((120, 300, 10, 10))
             screen.blit(text_xp, text_rect)

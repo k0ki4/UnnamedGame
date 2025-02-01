@@ -40,6 +40,8 @@ class Accessories(pygame.sprite.Sprite):
         self.lvl_bonus = 0
 
         self.button_rect = pygame.Rect((325, 290, 150, 70))
+        self.drop_button_rect = pygame.Rect((500, 290, 70, 70))
+
 
         self.image = pygame.image.load(self.sprite_path)
         self.rect = self.image.get_rect()
@@ -76,8 +78,8 @@ class Accessories(pygame.sprite.Sprite):
             rect_frame2 = frame.get_rect(topleft=(310, 120))
 
             pygame.font.init()
-            font_medium = pygame.font.SysFont('Arial', 20)
-            font_large = pygame.font.SysFont('Arial', 30)
+            font_medium = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 20)
+            font_large = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 30)
 
             name = font_large.render(f"{self.name}", True, self.color_rarity[self.rarity])  # Белый текст
             protect_text = font_medium.render(f"Бафф к ХП: {self.buff_hp}", True, (255, 255, 255))
@@ -91,6 +93,7 @@ class Accessories(pygame.sprite.Sprite):
             frame_button = pygame.image.load('./sprites/inventory/button.png').convert_alpha()
             frame_button = pygame.transform.scale(frame_button, (150, 70))
 
+
             screen.blit(frame, rect_frame)
             screen.blit(frame2, rect_frame2)
 
@@ -103,6 +106,12 @@ class Accessories(pygame.sprite.Sprite):
             if not self.is_equip:
                 screen.blit(frame_button, self.button_rect)
                 screen.blit(button_text, text_rect)
+
+                drop_button_text = font_medium.render("Выбросить", True, (255, 255, 255))
+                text_width, text_height = drop_button_text.get_size()
+                text_x = self.drop_button_rect.x + (self.drop_button_rect.width - text_width) // 2
+                text_y = self.drop_button_rect.y + (self.drop_button_rect.height - text_height) // 2
+                screen.blit(drop_button_text, (text_x, text_y))
 
             else:
                 button_text = font_medium.render("Снять", True, (255, 255, 255))

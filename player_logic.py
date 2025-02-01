@@ -51,6 +51,7 @@ class Player(pygame.sprite.Sprite):
 
         pygame.font.init()
         self.font = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 14)
+        self.large_font = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 25)
 
         self.monster_image = pygame.image.load("sprites/inventory/enemy_cell.png").convert_alpha()
         self.normal_image = pygame.image.load("sprites/inventory/empty_cell.png").convert_alpha()
@@ -127,44 +128,67 @@ class Player(pygame.sprite.Sprite):
         screen.blit(health_image, health_image_rect)
         screen.blit(text_surface, text_rect)
 
+    def render_experience(self, screen):
+        experience_image = pygame.image.load('sprites/gui/health.png').convert_alpha()
+        experience_image_rect = pygame.Rect(825, 120, 350, 25)
+        experience_image = pygame.transform.scale(experience_image,
+                                                  (experience_image_rect.width, experience_image_rect.height))
+
+        experience_percentage = self.xp / self.xp_for_next
+        if experience_percentage > 1:
+            experience_percentage = 1  # Ограничиваем до 100%
+
+        green_experience_width = int(300 * experience_percentage)
+
+        green_experience_surface = pygame.Surface((green_experience_width, experience_image_rect.height))
+        green_experience_surface.fill((0, 255, 0))
+
+        experience_text = f"{self.xp}/{self.xp_for_next}"
+        text_surface = self.font.render(experience_text, True, (255, 255, 255))
+        text_rect = text_surface.get_rect(center=(experience_image_rect.centerx, experience_image_rect.centery))
+
+        screen.blit(green_experience_surface, (experience_image_rect.x + 25, experience_image_rect.y))
+        screen.blit(experience_image, experience_image_rect)
+        screen.blit(text_surface, text_rect)
+
     def lvl_render(self, screen):
-        lvl_image = pygame.image.load('sprites/gui/step.png').convert_alpha()
-        lvl_image_rect = pygame.Rect(825, 220, 70, 20)
+        lvl_image = pygame.image.load('sprites/gui/stats.png').convert_alpha()
+        lvl_image_rect = pygame.Rect(825, 200, 50, 50)
         lvl_image = pygame.transform.scale(lvl_image, (lvl_image_rect.width,
                                                        lvl_image_rect.height))
 
-        lvl_text = self.font.render(f'Ур: {self.lvl}', True, 'RED')
+        lvl_text = self.large_font.render(f'Ур: {self.lvl}', True, 'WHITE')
         screen.blit(lvl_image, lvl_image_rect)
-        screen.blit(lvl_text, lvl_image_rect)
+        screen.blit(lvl_text, (880, 210, 50, 50))
 
-        step_image = pygame.image.load('sprites/gui/step.png').convert_alpha()
-        step_image_rect = pygame.Rect(825, 250, 70, 20)
+        step_image = pygame.image.load('sprites/gui/step_c.png').convert_alpha()
+        step_image_rect = pygame.Rect(825, 270, 50, 50)
         step_image = pygame.transform.scale(step_image, (step_image_rect.width,
                                                          step_image_rect.height))
 
-        step_text = self.font.render(f'Ходов: {self.action_count}', True, 'RED')
+        step_text = self.large_font.render(f'Ходов: {self.action_count}', True, 'WHITE')
         screen.blit(step_image, step_image_rect)
-        screen.blit(step_text, step_image_rect)
+        screen.blit(step_text, (880, 280, 50, 50))
 
     def damage_protect_render(self, screen):
-        damage_image = pygame.image.load('sprites/gui/damage.png').convert_alpha()
-        damage_image_rect = pygame.Rect(825, 150, 80, 20)
+        damage_image = pygame.image.load('sprites/gui/stats.png').convert_alpha()
+        damage_image_rect = pygame.Rect(825, 340, 50, 50)
         damage_image = pygame.transform.scale(damage_image, (damage_image_rect.width,
                                                              damage_image_rect.height))
 
-        protect_image = pygame.image.load('sprites/gui/protect.png').convert_alpha()
-        protect_image_rect = pygame.Rect(825, 190, 80, 20)
+        protect_image = pygame.image.load('sprites/gui/stats.png').convert_alpha()
+        protect_image_rect = pygame.Rect(825, 410, 50, 50)
         protect_image = pygame.transform.scale(protect_image, (protect_image_rect.width,
                                                                protect_image_rect.height))
 
-        damage_text = self.font.render(f'Урон: {self.damage}', True, 'RED')
-        protect_text = self.font.render(f'Зщ: {self.armor}', True, 'RED')
+        damage_text = self.large_font.render(f'Урон: {self.damage}', True, 'WHITE')
+        protect_text = self.large_font.render(f'Зщ: {self.armor}', True, 'WHITE')
 
         screen.blit(damage_image, damage_image_rect)
         screen.blit(protect_image, protect_image_rect)
 
-        screen.blit(damage_text, damage_image_rect)
-        screen.blit(protect_text, protect_image_rect)
+        screen.blit(damage_text, (880, 350, 50, 50))
+        screen.blit(protect_text, (880, 420, 50, 50))
 
     def render_stats(self, screen):
         self.calc_stats()
@@ -226,6 +250,7 @@ class Player(pygame.sprite.Sprite):
         self.lvl_render(screen)
         self.damage_protect_render(screen)
         self.render_health(screen)
+        self.render_experience(screen)
 
         self.count_usage()
 

@@ -1,10 +1,5 @@
 import sqlite3
 
-from acss.acss_logic import accessories_list
-from armores.armor_logic import armor_list
-from potions.potion_logic import potion_list
-from weapons.weapon_logic import weapons_list
-
 
 def check_db():
     with sqlite3.connect('database.db') as db:
@@ -50,7 +45,12 @@ def check_db():
         );
         """
         cursor.executescript(query)
-
+        print(1)
+        db.commit()
+        from acss.acss_logic import accessories_list
+        from armores.armor_logic import armor_list
+        from potions.potion_logic import potion_list
+        from weapons.weapon_logic import weapons_list
         # Проверка наличия данных в таблице и добавление, если пусто
         cursor.execute("SELECT COUNT(*) FROM weapons")
         if cursor.fetchone()[0] == 0:
