@@ -162,6 +162,7 @@ class Inventory:
                     search_slot.item = item
                     search_slot.item.open_stats = False
                     item.equip(search_slot.get_rect())
+
         elif isinstance(item, Accessories):
             slot_mapping = {
                 1: AccessoriesItemSlot,
@@ -179,6 +180,7 @@ class Inventory:
                     search_slot.item = item
                     search_slot.item.open_stats = False
                     item.equip(search_slot.get_rect())
+
         elif isinstance(item, Potion):
             item.use(self.player)
 

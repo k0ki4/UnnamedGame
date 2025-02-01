@@ -7,6 +7,8 @@ from monsters.monster_logic import *
 from player_logic import *
 import pygame
 
+from potions.potion_logic import Potion
+
 
 class Board:
     def __init__(self, width, height, padding=10):
@@ -70,6 +72,16 @@ class Board:
             return cell_x, cell_y
         return None
 
+    def fight_click(self, mouse_pos):
+        player = self.get_player()
+        cell_x = (mouse_pos[0] - self.left) // self.cell_size
+        cell_y = (mouse_pos[1] - self.top) // self.cell_size
+        if 0 <= cell_x <= self.width and 0 <= cell_y <= self.height:
+            if player.fight_mode and isinstance(self.board[cell_y][cell_x], (Monster,)) and self.board[cell_y][
+                cell_x] in player.radar_list:
+                text = player.get_damage(self.board[cell_y][cell_x])
+                return text
+
     def on_click(self, cell_coords):
         print(cell_coords)
 
@@ -124,8 +136,6 @@ class Play:
         self.name_game_surface = self.und_large_font.render('UNNAMED GAME', True, (255, 255, 255))
         self.name_game_surface_rect = self.name_game_surface.get_rect(center=(self.width // 2, self.height // 2 - 200))
 
-        self.active_sounds = []
-
         # StartPlay
         self.wave = 0
         self.old_chest = []
@@ -133,15 +143,6 @@ class Play:
         self.chest_sps = []
         self.backend_sound = pygame.mixer.Sound('misc/menu_music/undertale_core.mp3')
         self.backend_sound.set_volume(0.1)
-
-    def play_sound(self, sound):
-        sound.play()
-        self.active_sounds.append(sound)
-
-    def check_active_sounds(self):
-        for sound in self.active_sounds[:]:
-            if not sound.get_busy():
-                self.active_sounds.remove(sound)
 
     def render_wave(self):
         count_wave = self.und_font.render(f'Волна {self.board.play.wave}', True, 'WHITE')
@@ -307,11 +308,18 @@ class Play:
         board.play = self
         player = self.player
         self.new_wave()
-        running = True
         self.backend_sound.play(-1)
+        damage_texts = []
+        clock = pygame.time.Clock()
+        running = True
 
         while running:
+            dt = clock.tick(60) / 1000
             self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
+
+            if not self.all_monster and all([ch.is_open for ch in self.chest_sps]):
+                self.new_wave(use_anim=True)
+
             if player.action_count <= 0:
                 [i.attack_damage(player) for i in self.all_monster]
                 player.action_count = player.action_const
@@ -321,7 +329,9 @@ class Play:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1 and not player.inventory.is_open:
-                        board.get_cell(event.pos)
+                        new_text_damage = board.fight_click(event.pos)
+                        if new_text_damage:
+                            damage_texts.append(new_text_damage)
                     elif event.button == 1 and player.inventory.is_open:
                         for slot in player.inventory.slots + player.inventory.unic_slot:
                             item = slot.item
@@ -330,9 +340,10 @@ class Play:
                                     item.on_click(player)
                                 elif item.button_rect.collidepoint(event.pos) and item.open_stats and not item.is_equip:
                                     player.inventory.equip_item(slot)
-                                elif item.drop_button_rect.collidepoint(
-                                        event.pos) and item.open_stats and not item.is_equip:
-                                    player.inventory.drop(slot)
+                                elif not isinstance(item, Potion) and not item.is_equip:
+                                    if item.drop_button_rect.collidepoint(
+                                            event.pos) and item.open_stats and not item.is_equip:
+                                        player.inventory.drop(slot)
                                 elif item.button_rect.collidepoint(event.pos) and item.open_stats and item.is_equip:
                                     player.inventory.un_equip_item(slot)
 
@@ -343,7 +354,6 @@ class Play:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_i:  # Открытие инвентаря по нажатию клавиши 'I'
                         player.open_inventory()
-
             self.screen.fill('#32221a')
             board.render(screen)
 
@@ -362,8 +372,11 @@ class Play:
                         screen.blit(i.image, i.rect)
                         i.render_stats(screen)
 
-            if not self.all_monster and all([ch.is_open for ch in self.chest_sps]) and len(self.active_sounds) <= 1:
-                self.new_wave(use_anim=True)
+            for text in damage_texts[:]:  # Используем копию списка для безопасного удаления
+                text.update(dt)
+                text.draw(screen)
+                if text.alpha <= 0:  # Удаляем текст если он полностью исчез
+                    damage_texts.remove(text)
 
             player.render_stats(screen)  # Рендерим статистику игрока
             player.inventory.draw(screen, player)
@@ -376,7 +389,6 @@ class Play:
                         item.stats_update(screen)
 
             self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
-            self.check_active_sounds()
             pygame.display.flip()
 
     def menu(self):

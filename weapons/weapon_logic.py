@@ -93,12 +93,6 @@ class Weapon(pygame.sprite.Sprite):
             screen.blit(bonus_text, (cord_text_x, 230))
             screen.blit(lvl_text, (cord_text_x, 260))
 
-            drop_button_text = font_medium.render("Выбросить", True, (255, 255, 255))
-            text_width, text_height = drop_button_text.get_size()
-            text_x = self.drop_button_rect.x + (self.drop_button_rect.width - text_width) // 2
-            text_y = self.drop_button_rect.y + (self.drop_button_rect.height - text_height) // 2
-            screen.blit(drop_button_text, (text_x, text_y))
-
             if not self.is_equip:
                 screen.blit(frame_button, self.button_rect)
                 screen.blit(button_text, text_rect)

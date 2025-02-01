@@ -121,7 +121,7 @@ class Player(pygame.sprite.Sprite):
         red_health_surface = pygame.Surface((red_health_width, health_image_rect.height))
         red_health_surface.fill((255, 0, 0))
 
-        health_text = f"{self.hp}/{self.max_hp}"
+        health_text = f"ХП: {self.hp}/{self.max_hp}"
         text_surface = self.font.render(health_text, True, (255, 255, 255))
         text_rect = text_surface.get_rect(center=(health_image_rect.centerx, health_image_rect.centery))
         screen.blit(red_health_surface, (health_image_rect.x + 25, health_image_rect.y))
@@ -143,7 +143,7 @@ class Player(pygame.sprite.Sprite):
         green_experience_surface = pygame.Surface((green_experience_width, experience_image_rect.height))
         green_experience_surface.fill((0, 255, 0))
 
-        experience_text = f"{self.xp}/{self.xp_for_next}"
+        experience_text = f"Опыт: {self.xp}/{self.xp_for_next}"
         text_surface = self.font.render(experience_text, True, (255, 255, 255))
         text_rect = text_surface.get_rect(center=(experience_image_rect.centerx, experience_image_rect.centery))
 
@@ -391,10 +391,11 @@ class Player(pygame.sprite.Sprite):
         self.last_fight_render_time = current_time
 
     def get_damage(self, enemy):
-        res = enemy.get_damage(self)
+        res = enemy.take_damage(self)
         if res is not None:
             self.hit_sound.play()
             self.action_count -= 1
+            return res
 
     def taking_damage(self, damage):
         if damage <= self.armor:

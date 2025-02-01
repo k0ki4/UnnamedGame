@@ -3,6 +3,8 @@ import random
 
 import pygame
 
+from misc.damage_text_logic.damage_texts import DamageText
+
 monster_id = 0
 
 
@@ -31,8 +33,6 @@ class Monster(pygame.sprite.Sprite):
         self.hp = hp
         self.calc_stats()
 
-        self.take_radus_cell = 1
-
         self.image = pygame.Surface((board.cell_size - 20, board.cell_size - 20))
         self.image.fill("GREEN")
         self.rect = self.image.get_rect()
@@ -42,7 +42,7 @@ class Monster(pygame.sprite.Sprite):
         self.move_delay = 0.5
 
         pygame.font.init()
-        self.font = pygame.font.SysFont('Arial', 13)
+        self.font = pygame.font.Font('misc/font_ttf/Undertale-Battle-Font.ttf', 13)
 
         self.is_dead = False
 
@@ -181,9 +181,6 @@ class Monster(pygame.sprite.Sprite):
         self.armor = self.default_armor
         self.damage = self.default_damage
 
-    def calc_cell(self, cell, action_step):
-        pass
-
     def render_stats(self, screen):
         image = pygame.Surface((150, 20))
         image.fill("BLACK")
@@ -218,17 +215,20 @@ class Monster(pygame.sprite.Sprite):
         screen.blit(hp_text, (text_x, text_y))
         screen.blit(text, rect_text)
 
-    def get_damage(self, player):
+    def take_damage(self, player):
+        damage = 0
         if self.damaged:
             return None
         if player.damage <= self.armor:
             self.hp -= 1
+            damage = 1
         elif player.damage > self.armor:
             self.hp -= (player.damage - self.armor)
+            damage = player.damage - self.armor
 
         if self.hp <= 0:
             self.dead(player)
-        return True
+        return DamageText(self.rect.x, self.rect.y, damage)
 
     def dead(self, player):
         self.kill()
