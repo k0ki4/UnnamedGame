@@ -338,13 +338,14 @@ class Bee(Monster, Animated):
 
     def attack_damage(self, player, random_move_chance=0.5):
         search_close_player = self.fight_cell(player)
+        random_move_chance = self.random_move_chance
+
         old = ()
         new = ()
 
         if search_close_player:
             player.taking_damage(self.damage)
         elif random.random() < random_move_chance:
-            print('#' * 10)
             directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Вверх, вниз, влево, вправо
             random.shuffle(directions)  # Перемешиваем направления для случайного выбора
 
@@ -354,10 +355,9 @@ class Bee(Monster, Animated):
                 old = (y, x)
                 new_y = y + direction[0]
                 new_x = x + direction[1]
-                # Проверяем границы и проходимость клетки
                 if 0 <= new_y < self.board.height and 0 <= new_x < self.board.width:
-                    if self.board.board[new_y][new_x] == 0:  # Проверяем, что клетка проходимая
-                        self.set_rect(new_x, new_y)  # Перемещаемся
+                    if self.board.board[new_y][new_x] == 0:
+                        self.set_rect(new_x, new_y)
                         new = (new_y, new_x)
                         print(f"Монстр переместился в случайную клетку: {(new_y, new_x)}")
                         self.update_direction((new[0] - old[0], new[1] - old[1]))
@@ -418,6 +418,8 @@ class Slime(Monster, Animated):
 
     def attack_damage(self, player, random_move_chance=0.5):
         search_close_player = self.fight_cell(player)
+        random_move_chance = self.random_move_chance
+
         old = ()
         new = ()
 

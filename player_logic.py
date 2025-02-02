@@ -9,6 +9,11 @@ from monsters.monster_logic import Monster
 
 
 class Player(pygame.sprite.Sprite):
+    down = 'sprites/player/frisk_down.png'
+    up = 'sprites/player/frisk_up.png'
+    left = 'sprites/player/frisk_left.png'
+    right = 'sprites/player/frisk_right.png'
+
     def __init__(self, board, *groups, hp=10, default_damage=1, default_armor=1):
         super().__init__(*groups)
         self.board = board
@@ -32,8 +37,9 @@ class Player(pygame.sprite.Sprite):
         self.action_const = 3
         self.action_count = 3
 
-        self.image = pygame.Surface((board.cell_size, board.cell_size))
-        self.image.fill("ORANGE")
+
+        self.need_load = self.down
+        self.image = pygame.image.load(self.need_load)
         self.rect = self.image.get_rect()  # Получаем прямоугольник для спрайта
 
         self.board.board[0][0] = self
