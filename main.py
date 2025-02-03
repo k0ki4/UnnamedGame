@@ -113,10 +113,12 @@ class Play:
     def __init__(self):
         pygame.init()
         check_db()
-        fps = 60
-        SIZE = width, height = 1200, 800
+        self.SIZE = width, height = 1200, 800
         screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Unnamed Game")
+        icon = pygame.image.load('misc/icon.png')
+        pygame.display.set_icon(icon)
+
         self.screen = screen
         self.board = None
         self.player = None
