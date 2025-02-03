@@ -1,4 +1,5 @@
 import random
+import sys
 import time
 import sqlite3
 
@@ -172,6 +173,7 @@ class Play:
         if use_anim:
             self.animate_wave_text()
         self.board.set_box()
+        self.player.hp = self.player.max_hp
         pygame.mixer.unpause()
 
     def animate_wave_text(self):
@@ -376,13 +378,16 @@ class Play:
                     mouse_pos = event.pos
 
                     if event.type == pygame.QUIT:
-                        exit()
+                        pygame.quit()
+                        sys.exit()
 
                     if continue_button_rect.collidepoint(mouse_pos):
                         return True
 
                     if exit_button_rect.collidepoint(mouse_pos):
-                        exit()
+                        pygame.quit()
+                        sys.exit()
+
             pygame.display.flip()
 
     def pause(self):
@@ -428,7 +433,7 @@ class Play:
                 mouse_pos = event.pos
 
                 if event.type == pygame.QUIT:
-                    exit()
+                    pygame.quit()
 
                 if event.type == pygame.KEYDOWN:
                     keys = pygame.key.get_pressed()
@@ -467,7 +472,8 @@ class Play:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    exit()
+                    pygame.quit()
+                    sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN and not pause:
                     if event.button == 1 and not player.inventory.is_open:
                         new_text_damage = board.fight_click(event.pos)
@@ -573,7 +579,8 @@ class Play:
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    exit()
+                    pygame.quit()
+                    sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if play.btn_rect.collidepoint(mouse_pos):
@@ -583,7 +590,9 @@ class Play:
                         play.fade_out(2000)
                         break
                     if play.exit_btn_rect.collidepoint(mouse_pos):
-                        exit()
+                        pygame.quit()
+                        sys.exit()
+
             play.load_menu()
 
             pygame.display.flip()
