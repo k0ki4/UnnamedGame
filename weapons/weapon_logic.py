@@ -1,7 +1,6 @@
 import sqlite3
 
 import pygame
-from Tools.demo.spreadsheet import center
 
 weapons_list = [
     {"name": "Меч", "damage": 10, "rarity": 1, "sprite_path": "sprites/weapons_image/sword/sword_r1.png"},

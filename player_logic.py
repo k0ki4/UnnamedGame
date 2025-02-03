@@ -37,18 +37,18 @@ class Player(pygame.sprite.Sprite):
         self.action_const = 3
         self.action_count = 3
 
-
         self.need_load = self.down
-        self.image = pygame.image.load(self.need_load)
-        self.rect = self.image.get_rect()  # Получаем прямоугольник для спрайта
+        self.image = pygame.image.load(self.need_load).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (self.board.cell_size, self.board.cell_size))
+        self.rect = self.image.get_rect()
 
         self.board.board[0][0] = self
         self.rect.x, self.rect.y = 0 * board.cell_size + board.left, 0 * board.cell_size + board.top
 
         self.fight_mode = False
 
-        self.last_move_time = 0  # Время последнего движения
-        self.move_delay = 0.25  # Задержка в секундах
+        self.last_move_time = 0
+        self.move_delay = 0.25
 
         self.pulse_time = 0
 
@@ -73,7 +73,6 @@ class Player(pygame.sprite.Sprite):
         self.hit_sound.set_volume(0.5)
         self.hit_self = pygame.mixer.Sound('misc/sound_effect/Hit_player.wav')
         self.hit_self.set_volume(0.7)
-
 
     def get_xp(self, count):
         self.xp += count
@@ -107,14 +106,13 @@ class Player(pygame.sprite.Sprite):
 
     def calc_cell(self, cell, action_step):
         x, y = cell
-        # Проверяем границы
         if not (0 <= x + action_step[0] < self.board.width and 0 <= y + action_step[1] < self.board.height):
-            return x, y  # Возвращаем текущее положение, если движение недопустимо
+            return x, y
         if self.board.board[y + action_step[1]][x + action_step[0]] != 0:
             return x, y
         self.board.board[y][x] = 0
         self.action_count -= 1
-        return x + action_step[0], y + action_step[1]  # Возвращаем новое положение
+        return x + action_step[0], y + action_step[1]
 
     def render_health(self, screen):
         health_image = pygame.image.load('sprites/gui/health.png').convert_alpha()
@@ -142,7 +140,7 @@ class Player(pygame.sprite.Sprite):
 
         experience_percentage = self.xp / self.xp_for_next
         if experience_percentage > 1:
-            experience_percentage = 1  # Ограничиваем до 100%
+            experience_percentage = 1
 
         green_experience_width = int(300 * experience_percentage)
 
@@ -219,8 +217,8 @@ class Player(pygame.sprite.Sprite):
         start_fight_rect = pygame.Rect(845, 600, 60, 60)
         screen.blit(start_fight, start_fight_rect)
 
-        start_fight_text = self.font.render("Провести атаку", True, (255, 255, 255))  # Белый текст
-        start_fight_text_2 = self.font.render("R", True, (255, 255, 255))  # Белый текст
+        start_fight_text = self.font.render("Провести атаку", True, (255, 255, 255))
+        start_fight_text_2 = self.font.render("R", True, (255, 255, 255))
         screen.blit(start_fight_text, (830, 580))
 
         text_width, text_height = start_fight_text_2.get_size()
@@ -233,8 +231,8 @@ class Player(pygame.sprite.Sprite):
         open_inventory_rect = pygame.Rect(845, 700, 60, 60)
         screen.blit(open_inventory, open_inventory_rect)
 
-        open_inventory_text = self.font.render("Открыть инвентарь", True, (255, 255, 255))  # Белый текст
-        open_inventory_text_button = self.font.render("I", True, (255, 255, 255))  # Белый текст
+        open_inventory_text = self.font.render("Открыть инвентарь", True, (255, 255, 255))
+        open_inventory_text_button = self.font.render("I", True, (255, 255, 255))
         screen.blit(open_inventory_text, (830, 680))
 
         text_width, text_height = open_inventory_text_button.get_size()
@@ -242,8 +240,8 @@ class Player(pygame.sprite.Sprite):
         text_y = open_inventory_rect.y + (open_inventory_rect.height - text_height) // 2
         screen.blit(open_inventory_text_button, (text_x, text_y))
 
-        take_text_take = self.font.render("Взаимодействовать", True, (255, 255, 255))  # Белый текст
-        take_text = self.font.render("E", True, (255, 255, 255))  # Белый текст
+        take_text_take = self.font.render("Взаимодействовать", True, (255, 255, 255))
+        take_text = self.font.render("E", True, (255, 255, 255))
         screen.blit(take_text_take, (830, 480))
         if self.radar_list:
             for i in self.radar_list:
@@ -260,6 +258,18 @@ class Player(pygame.sprite.Sprite):
 
         self.count_usage()
 
+    def update_direction(self, direction):
+        if direction == (-1, 0):  # Вверх
+            self.need_load = self.up
+        elif direction == (1, 0):  # Вниз
+            self.need_load = self.down
+        elif direction == (0, -1):  # Влево
+            self.need_load = self.left
+        elif direction == (0, 1):  # Вправо
+            self.need_load = self.right
+        self.image = pygame.image.load(self.need_load).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (self.board.cell_size, self.board.cell_size))
+
     def update(self, keys, screen):
         self.screen = screen
         if keys[pygame.K_r]:
@@ -275,6 +285,7 @@ class Player(pygame.sprite.Sprite):
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
                 self.step.play()
+                self.update_direction((-1, 0))
             if keys[pygame.K_s]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (0, 1))
@@ -282,6 +293,7 @@ class Player(pygame.sprite.Sprite):
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
                 self.step.play()
+                self.update_direction((1, 0))
 
             if keys[pygame.K_a]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
@@ -290,6 +302,8 @@ class Player(pygame.sprite.Sprite):
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
                 self.step.play()
+                self.update_direction((0, -1))
+
             if keys[pygame.K_d]:
                 x, y = self.calc_cell((self.rect.x // self.board.cell_size, self.rect.y // self.board.cell_size),
                                       (1, 0))
@@ -297,6 +311,7 @@ class Player(pygame.sprite.Sprite):
                 self.rect.x, self.rect.y = (x * self.board.cell_size + self.board.left,
                                             y * self.board.cell_size + self.board.top)
                 self.step.play()
+                self.update_direction((0, 1))
 
             if keys[pygame.K_e]:
                 if self.radar_list:
@@ -381,7 +396,8 @@ class Player(pygame.sprite.Sprite):
                         pulse_rect.x += 5 - num // 2
                         pulse_rect.y += 5 - num // 2
                     screen.blit(scaled_image, pulse_rect)
-                elif not isinstance(self.board.board[ny][nx], (Monster, LootChest)):
+                elif (not isinstance(self.board.board[ny][nx], (Monster, LootChest)) and
+                      self.board.board[ny][nx] != 'box'):
                     scaled_image = pygame.transform.scale(self.normal_image, (scaled_width, scaled_height))
                     pulse_rect = scaled_image.get_rect(center=rect.center)
 
@@ -411,11 +427,12 @@ class Player(pygame.sprite.Sprite):
             self.hp -= (damage - self.armor)
             self.hit_self.play()
         if self.hp <= 0:
+            self.hp = 0
             self.dead_player()
 
     def dead_player(self):
-        print('Смерть')
-        exit()
+        play = self.board.get_play()
+        play.end_game = True
 
     def get_board(self):
         return self.board

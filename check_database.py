@@ -6,6 +6,11 @@ def check_db():
         cursor = db.cursor()
 
         query = """
+        CREATE TABLE IF NOT EXISTS player (
+            id INTEGER,
+            best_wave INTEGER DEFAULT 0,
+            PRIMARY KEY("id" AUTOINCREMENT)
+        );
         CREATE TABLE IF NOT EXISTS weapons (
             id INTEGER,
             name TEXT,
@@ -52,6 +57,11 @@ def check_db():
         from potions.potion_logic import potion_list
         from weapons.weapon_logic import weapons_list
         # Проверка наличия данных в таблице и добавление, если пусто
+        cursor.execute('SELECT best_wave FROM player')
+        best_wave = cursor.fetchone()
+        if best_wave is None:
+            cursor.execute("INSERT INTO player (best_wave) VALUES (0);")
+
         cursor.execute("SELECT COUNT(*) FROM weapons")
         if cursor.fetchone()[0] == 0:
             for weapon in weapons_list:

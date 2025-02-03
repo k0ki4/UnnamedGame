@@ -1,7 +1,10 @@
 import random
 import time
+import sqlite3
 
 from check_database import check_db
+
+check_db()
 from loot.chest import InfinityChest, ArmorChest
 from monsters.monster_logic import *
 from player_logic import *
@@ -16,14 +19,12 @@ class Board:
         self.width = width
         self.height = height
         self.padding = padding
-        # self.background = pygame.image.load('sprites/map/frame.png').convert_alpha()
-        # windows_size = pygame.display.get_window_size()
-        # self.background = pygame.transform.scale(self.background, (windows_size[0] - 400, windows_size[1]))
 
-        # Вычисляем размер окна
         self.window_size = pygame.display.get_window_size()
 
         self.grass = pygame.image.load('sprites/map/floor.png').convert_alpha()
+        self.box = pygame.image.load('sprites/map/box.png').convert_alpha()
+        self.count_box = random.randint(5, 10)
 
         # Вычисляем размер ячейки с учетом отступов
         self.cell_size = (self.window_size[0] - 2 * padding) // self.width
@@ -32,8 +33,19 @@ class Board:
 
         # Инициализация доски
         self.board = [[0] * width for _ in range(height)]
+        self.set_box()
         self.left = padding
         self.top = padding
+
+    def set_box(self):
+        for x in range(self.width):
+            for y in range(self.height):
+                if self.board[y][x] == 'box':
+                    self.board[y][x] = 0
+        for i in range(self.count_box):
+            x, y = random.randint(0, self.width - 1), random.randint(0, self.height - 1)
+            if self.board[x][y] == 0:
+                self.board[x][y] = 'box'
 
     def get_play(self):
         return self.play
@@ -48,10 +60,14 @@ class Board:
         for x in range(self.width):
             for y in range(self.height):
 
-                # Отображаем спрайт, если он существует
                 if self.grass:
                     sprite = self.grass
-                    sprite = pygame.transform.scale(sprite, (self.cell_size, self.cell_size))  # Изменяем размер спрайта
+                    sprite = pygame.transform.scale(sprite, (self.cell_size, self.cell_size))
+                    screen.blit(sprite, (x * self.cell_size + self.left, y * self.cell_size + self.top))
+
+                if self.box and self.board[y][x] == 'box':
+                    sprite = self.box
+                    sprite = pygame.transform.scale(sprite, (self.cell_size, self.cell_size))
                     screen.blit(sprite, (x * self.cell_size + self.left, y * self.cell_size + self.top))
 
                 pygame.draw.rect(
@@ -67,7 +83,7 @@ class Board:
         if 0 <= cell_x <= self.width and 0 <= cell_y <= self.height:
             if player.fight_mode and isinstance(self.board[cell_y][cell_x], (Monster,)) and self.board[cell_y][
                 cell_x] in player.radar_list:
-                    player.get_damage(self.board[cell_y][cell_x])
+                player.get_damage(self.board[cell_y][cell_x])
 
             return cell_x, cell_y
         return None
@@ -84,10 +100,6 @@ class Board:
 
     def on_click(self, cell_coords):
         print(cell_coords)
-
-    def get_click(self, mouse_pos):
-        cell = self.get_cell(mouse_pos)
-        self.on_click(cell)
 
     def get_player(self):
         for x in range(self.width):
@@ -143,6 +155,7 @@ class Play:
         self.chest_sps = []
         self.backend_sound = pygame.mixer.Sound('misc/menu_music/undertale_core.mp3')
         self.backend_sound.set_volume(0.1)
+        self.end_game = False
 
     def render_wave(self):
         count_wave = self.und_font.render(f'Волна {self.board.play.wave}', True, 'WHITE')
@@ -158,6 +171,7 @@ class Play:
         self.get_chest()
         if use_anim:
             self.animate_wave_text()
+        self.board.set_box()
         pygame.mixer.unpause()
 
     def animate_wave_text(self):
@@ -198,7 +212,6 @@ class Play:
 
         wave_sound.stop()
 
-
     def random_pos(self):
         x = random.randint(0, self.board.width - 1)
         y = random.randint(0, self.board.height - 1)
@@ -218,16 +231,18 @@ class Play:
             armor = random.randint(4, 6 * self.wave + self.player.lvl)
             hp = random.randint(10, 7 * self.wave + self.player.lvl + 2)
             xp_cost = random.randint(1, 6 + self.player.lvl)
-            self.all_monster.append(monster(board=self.board,
-                                            hp=hp,
-                                            xp_cost=xp_cost,
-                                            x=x,
-                                            y=y,
-                                            default_damage=damage,
-                                            default_armor=armor))
+            result_monster = monster(board=self.board,
+                                     hp=hp,
+                                     xp_cost=xp_cost,
+                                     x=x,
+                                     y=y,
+                                     default_damage=damage,
+                                     default_armor=armor)
+            result_monster.random_move_chance = random.uniform(0.0, 0.5)
+            self.all_monster.append(result_monster)
 
     def get_chest(self):
-        count = random.randint(2, self.wave + 1)
+        count = len(self.all_monster)
         chest_list = [LootChest]
 
         for i in range(count):
@@ -248,7 +263,6 @@ class Play:
         if random.random() < 0.001 and (current_time - self.owl_sound_last) > self.sound_cooldown:
             sound.play()
             self.owl_sound_last = current_time
-
 
         background_image = pygame.image.load('sprites/menu/background.png').convert_alpha()
         background_image = pygame.transform.scale(background_image, (self.width, self.height))
@@ -272,6 +286,8 @@ class Play:
         rotated_new_text_surface = pygame.transform.rotate(self.name_game_surface, angle)
         rotated_new_text_rect = rotated_new_text_surface.get_rect(center=self.name_game_surface_rect.center)
 
+        best_wave_text = self.font.render(f'Лучшая волна: {self.get_best_wave()}', True, 'WHITE')
+        best_wave_text_rect = pygame.Rect((600, 620, 70, 70))
         self.screen.blit(background_image, background_image_rect)
 
         # Играть
@@ -280,6 +296,8 @@ class Play:
         # Выйти
         self.screen.blit(self.exit_btn, exit_btn_new_rect)
         self.screen.blit(exit_btn_surface, exit_btn_text_rect)
+        # Макс Волна
+        self.screen.blit(best_wave_text, best_wave_text_rect)
 
         # Название игры
         self.screen.blit(rotated_new_text_surface, rotated_new_text_rect)
@@ -293,14 +311,135 @@ class Play:
             pygame.display.flip()
             pygame.time.delay(int(duration / 255))
 
-    def fade_in(self, duration):
-        fade_surface = pygame.Surface((self.width, self.height))
-        fade_surface.fill((0, 0, 0))
-        for alpha in range(255, -1, -1):
-            fade_surface.set_alpha(alpha)
-            self.screen.blit(fade_surface, (0, 0))
+    def get_best_wave(self):
+        with sqlite3.connect('database.db') as db:
+            cursor = db.cursor()
+            cursor.execute('SELECT best_wave FROM player')
+            best_wave = cursor.fetchone()[0]
+            db.commit()
+            return best_wave
+
+    def update_best_wave(self):
+        with sqlite3.connect('database.db') as db:
+            cursor = db.cursor()
+            cursor.execute('SELECT best_wave FROM player')
+            best_wave = cursor.fetchone()[0]
+            if self.wave > best_wave:
+                cursor.execute('UPDATE player SET best_wave = ?', (self.wave,))
+                db.commit()
+
+    def end_games(self):
+        frame = pygame.image.load("sprites/gui/gui.png")
+        frame_2 = pygame.image.load("sprites/gui/gui_2.png")
+        frame_rect = pygame.Rect((200, 100, 400, 300))
+        frame = pygame.transform.scale(frame, (frame_rect.width, frame_rect.height))
+        frame_2 = pygame.transform.scale(frame_2, (frame_rect.width, frame_rect.height))
+
+        continue_button_rect = pygame.Rect(220, 250, 350, 50)
+        exit_button_rect = pygame.Rect(220, 320, 350, 50)
+        continue_button = pygame.image.load("sprites/menu/green_btn.png")
+        exit_button = pygame.image.load("sprites/menu/red_btn.png")
+        continue_button = pygame.transform.scale(continue_button,
+                                                 (continue_button_rect.width, continue_button_rect.height))
+        exit_button = pygame.transform.scale(exit_button, (exit_button_rect.width, exit_button_rect.height))
+
+        pause_text = self.font.render("Вы погибли", True, 'WHITE')
+        wave_text = self.font.render(f"Волна: {self.wave}", True, 'WHITE')
+
+        self.screen.blit(frame, frame_rect)
+        self.screen.blit(frame_2, frame_rect)
+
+        self.screen.blit(continue_button, continue_button_rect)
+        self.screen.blit(exit_button, exit_button_rect)
+
+        self.screen.blit(pause_text, pygame.Rect(285, 140, 350, 50))
+        self.screen.blit(wave_text, pygame.Rect(285, 160, 350, 50))
+
+        continue_text = self.font.render('В меню', True, (255, 255, 255))
+        exit_text = self.font.render('Выйти', True, (255, 255, 255))
+
+        text_width, text_height = continue_text.get_size()
+        text_x = continue_button_rect.x + (continue_button_rect.width - text_width) // 2
+        text_y = continue_button_rect.y + (continue_button_rect.height - text_height) // 2
+        self.screen.blit(continue_text, (text_x, text_y))
+
+        text_width, text_height = exit_text.get_size()
+        text_x = exit_button_rect.x + (exit_button_rect.width - text_width) // 2
+        text_y = exit_button_rect.y + (exit_button_rect.height - text_height) // 2
+        self.screen.blit(exit_text, (text_x, text_y))
+
+        self.update_best_wave()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos
+
+                    if event.type == pygame.QUIT:
+                        exit()
+
+                    if continue_button_rect.collidepoint(mouse_pos):
+                        return True
+
+                    if exit_button_rect.collidepoint(mouse_pos):
+                        exit()
             pygame.display.flip()
-            pygame.time.delay(int(duration / 255))
+
+    def pause(self):
+        frame = pygame.image.load("sprites/gui/gui.png")
+        frame_2 = pygame.image.load("sprites/gui/gui_2.png")
+        frame_rect = pygame.Rect((200, 100, 400, 300))
+        frame = pygame.transform.scale(frame, (frame_rect.width, frame_rect.height))
+        frame_2 = pygame.transform.scale(frame_2, (frame_rect.width, frame_rect.height))
+
+        continue_button_rect = pygame.Rect(220, 250, 350, 50)
+        exit_button_rect = pygame.Rect(220, 320, 350, 50)
+        continue_button = pygame.image.load("sprites/menu/green_btn.png")
+        exit_button = pygame.image.load("sprites/menu/red_btn.png")
+        continue_button = pygame.transform.scale(continue_button,
+                                                 (continue_button_rect.width, continue_button_rect.height))
+        exit_button = pygame.transform.scale(exit_button, (exit_button_rect.width, exit_button_rect.height))
+
+        pause_text = self.und_large_font.render("Пауза", True, 'WHITE')
+
+        self.screen.blit(frame, frame_rect)
+        self.screen.blit(frame_2, frame_rect)
+
+        self.screen.blit(continue_button, continue_button_rect)
+        self.screen.blit(exit_button, exit_button_rect)
+
+        self.screen.blit(pause_text, pygame.Rect(285, 140, 350, 50))
+
+        continue_text = self.font.render('Продолжить', True, (255, 255, 255))
+        exit_text = self.font.render('Выйти', True, (255, 255, 255))
+
+        text_width, text_height = continue_text.get_size()
+        text_x = continue_button_rect.x + (continue_button_rect.width - text_width) // 2
+        text_y = continue_button_rect.y + (continue_button_rect.height - text_height) // 2
+        self.screen.blit(continue_text, (text_x, text_y))
+
+        text_width, text_height = exit_text.get_size()
+        text_x = exit_button_rect.x + (exit_button_rect.width - text_width) // 2
+        text_y = exit_button_rect.y + (exit_button_rect.height - text_height) // 2
+        self.screen.blit(exit_text, (text_x, text_y))
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+
+                if event.type == pygame.QUIT:
+                    exit()
+
+                if event.type == pygame.KEYDOWN:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_ESCAPE]:
+                        return False
+
+                if continue_button_rect.collidepoint(mouse_pos):
+                    return False
+
+                if exit_button_rect.collidepoint(mouse_pos):
+                    return True
 
     def main_game(self):
         screen = self.screen
@@ -312,8 +451,10 @@ class Play:
         damage_texts = []
         clock = pygame.time.Clock()
         running = True
-
+        pause = False
         while running:
+            if self.end_game is True:
+                break
             dt = clock.tick(60) / 1000
             self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
 
@@ -326,8 +467,8 @@ class Play:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                    exit()
+                if event.type == pygame.MOUSEBUTTONDOWN and not pause:
                     if event.button == 1 and not player.inventory.is_open:
                         new_text_damage = board.fight_click(event.pos)
                         if new_text_damage:
@@ -347,13 +488,19 @@ class Play:
                                 elif item.button_rect.collidepoint(event.pos) and item.open_stats and item.is_equip:
                                     player.inventory.un_equip_item(slot)
 
-                if event.type == pygame.KEYDOWN and not player.inventory.is_open and player.action_count:
+                if event.type == pygame.KEYDOWN and not player.inventory.is_open and player.action_count and not pause:
                     keys = pygame.key.get_pressed()
                     player.update(keys, screen)
 
                 if event.type == pygame.KEYDOWN:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_ESCAPE]:
+                        pause = not pause
+
+                if event.type == pygame.KEYDOWN and not pause:
                     if event.key == pygame.K_i:  # Открытие инвентаря по нажатию клавиши 'I'
                         player.open_inventory()
+
             self.screen.fill('#32221a')
             board.render(screen)
 
@@ -372,13 +519,13 @@ class Play:
                         screen.blit(i.image, i.rect)
                         i.render_stats(screen)
 
-            for text in damage_texts[:]:  # Используем копию списка для безопасного удаления
+            for text in damage_texts[:]:
                 text.update(dt)
                 text.draw(screen)
-                if text.alpha <= 0:  # Удаляем текст если он полностью исчез
+                if text.alpha <= 0:
                     damage_texts.remove(text)
 
-            player.render_stats(screen)  # Рендерим статистику игрока
+            player.render_stats(screen)
             player.inventory.draw(screen, player)
             self.render_wave()
 
@@ -389,10 +536,30 @@ class Play:
                         item.stats_update(screen)
 
             self.all_monster = [monster for monster in self.all_monster if not monster.is_dead]
+
+            if pause:
+                res = self.pause()
+                if res is False:
+                    pause = False
+                if res is True:
+                    running = False
             pygame.display.flip()
+
+        if pause:
+            pygame.mixer.stop()
+            self.menu()
+        if self.end_game:
+            res = self.end_games()
+            if res is True:
+                pygame.mixer.stop()
+                self.menu()
 
     def menu(self):
         running = True
+        self.end_game = False
+        self.all_monster = []
+        self.chest_sps = []
+        self.wave = 0
 
         self.board = Board(10, 10)
         self.player = Player(self.board)
@@ -409,13 +576,13 @@ class Play:
                     exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
-                    if play.btn_rect.collidepoint(mouse_pos):  # Проверяем, попадает ли курсор в область кнопки
+                    if play.btn_rect.collidepoint(mouse_pos):
                         start_play = True
                         running = False
                         pygame.mixer.music.stop()
                         play.fade_out(2000)
                         break
-                    if play.exit_btn_rect.collidepoint(mouse_pos):  # Проверяем, попадает ли курсор в область кнопки
+                    if play.exit_btn_rect.collidepoint(mouse_pos):
                         exit()
             play.load_menu()
 

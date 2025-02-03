@@ -378,7 +378,6 @@ class Bee(Monster, Animated):
                 direction_to_player = (new[0] - old[0], new[1] - old[1])
                 self.update_direction(direction_to_player)
 
-
     def update_direction(self, direction):
         if direction == (-1, 0):  # Вверх
             self.need_load = self.up
@@ -392,7 +391,6 @@ class Bee(Monster, Animated):
 
     def update(self, screen):
         current_time = pygame.time.get_ticks()
-        # Логика для обычной анимации (если есть)
         if current_time - self.last_update > self.frame_rate:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
@@ -432,7 +430,6 @@ class Slime(Monster, Animated):
 
             for direction in directions:
                 x, y = self.board.get_cell((self.rect.x, self.rect.y))
-                print('Старая позиция', y, x)
                 old = (y, x)
                 new_y = y + direction[0]
                 new_x = x + direction[1]
@@ -441,7 +438,6 @@ class Slime(Monster, Animated):
                     if self.board.board[new_y][new_x] == 0:  # Проверяем, что клетка проходимая
                         self.set_rect(new_x, new_y)  # Перемещаемся
                         new = (new_y, new_x)
-                        print(f"Монстр переместился в случайную клетку: {(new_y, new_x)}")
                         self.update_direction((new[0] - old[0], new[1] - old[1]))
                         return True
         else:
@@ -449,9 +445,6 @@ class Slime(Monster, Animated):
             player_x, player_y = self.board.get_cell((player.rect.x, player.rect.y))
             old = (y, x)
             path_to_player = self.find_shortest_path((y, x), (player_y, player_x), player)
-            print(f"Текущая позиция монстра: {(y, x)}, Позиция игрока: {(player_y, player_x)}")
-            print(f"Найденный путь: {path_to_player}")
-            print("Monster", {self.__repr__()})
 
             if path_to_player:
                 x, y = path_to_player[1]
@@ -461,7 +454,6 @@ class Slime(Monster, Animated):
                 self.update_direction(direction_to_player)
 
     def update_direction(self, direction):
-        print('Входящий поворот', direction)
         if direction == (-1, 0):  # Вверх
             self.need_load = self.up
         elif direction == (1, 0):  # Вниз
@@ -474,7 +466,6 @@ class Slime(Monster, Animated):
 
     def update(self, screen):
         current_time = pygame.time.get_ticks()
-        # Логика для обычной анимации (если есть)
         if current_time - self.last_update > self.frame_rate:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
@@ -512,16 +503,13 @@ class Bat(Monster, Animated):
 
             for direction in directions:
                 x, y = self.board.get_cell((self.rect.x, self.rect.y))
-                print('Старая позиция', y, x)
                 old = (y, x)
                 new_y = y + direction[0]
                 new_x = x + direction[1]
-                # Проверяем границы и проходимость клетки
                 if 0 <= new_y < self.board.height and 0 <= new_x < self.board.width:
                     if self.board.board[new_y][new_x] == 0:  # Проверяем, что клетка проходимая
                         self.set_rect(new_x, new_y)  # Перемещаемся
                         new = (new_y, new_x)
-                        print(f"Монстр переместился в случайную клетку: {(new_y, new_x)}")
                         self.update_direction((new[0] - old[0], new[1] - old[1]))
                         return True
         else:
@@ -529,9 +517,6 @@ class Bat(Monster, Animated):
             player_x, player_y = self.board.get_cell((player.rect.x, player.rect.y))
             old = (y, x)
             path_to_player = self.find_shortest_path((y, x), (player_y, player_x), player)
-            print(f"Текущая позиция монстра: {(y, x)}, Позиция игрока: {(player_y, player_x)}")
-            print(f"Найденный путь: {path_to_player}")
-            print("Monster", {self.__repr__()})
 
             if path_to_player:
                 x, y = path_to_player[1]
@@ -541,7 +526,6 @@ class Bat(Monster, Animated):
                 self.update_direction(direction_to_player)
 
     def update_direction(self, direction):
-        print('Входящий поворот', direction)
         if direction == (-1, 0):  # Вверх
             self.need_load = self.up
         elif direction == (1, 0):  # Вниз
@@ -554,7 +538,6 @@ class Bat(Monster, Animated):
 
     def update(self, screen):
         current_time = pygame.time.get_ticks()
-        # Логика для обычной анимации (если есть)
         if current_time - self.last_update > self.frame_rate:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]

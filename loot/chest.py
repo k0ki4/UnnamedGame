@@ -68,15 +68,10 @@ class LootChest(pygame.sprite.Sprite):
             count_loot = random.randint(1, 2)
             for i in range(count_loot):
                 item = self.get_item_for_rarity()
-                print(f'Редкость: {self.rarity}')
-                print('Сундук открыт')
-                print(f'Редкость предмета: {item.rarity}')
                 if not isinstance(item, Potion):
                     bonus = random.randint(1, 5)
-                    item.get_bonus(bonus)
-                    print(f'Бонус к оружию +{bonus + self.board.get_play().wave}')
+                    item.get_bonus(bonus + self.board.get_play().wave)
                     item.get_lvl_bonus(player.lvl)
-                    print(f'Бонус от лвл-а {player.lvl}')
                 player.inventory.add_item(item)
             self.is_open = True
             self.image = self.open_chest

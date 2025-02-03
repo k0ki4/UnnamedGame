@@ -83,7 +83,6 @@ class Inventory:
 
         self.size = self.x, self.y, self.width, self.height = (100, 100, 600, 600)
 
-        # Создаем ячейки инвентаря
         for row in range(self.rows):
             for col in range(self.cols):
                 x = 115 + col * (cell_width + cell_spacing)
@@ -138,7 +137,6 @@ class Inventory:
                 if search_slot.item is None and isinstance(search_slot, EquipItemSlot):
                     if item.is_equip:
                         return
-                    print('Слот найден')
                     slot.item = None
                     search_slot.item = item
                     search_slot.item.open_stats = False
@@ -157,7 +155,6 @@ class Inventory:
 
                 slot_class = slot_mapping.get(item.unic)
                 if slot_class and isinstance(search_slot, slot_class) and search_slot.item is None:
-                    print('Слот найден')
                     slot.item = None
                     search_slot.item = item
                     search_slot.item.open_stats = False
@@ -186,7 +183,7 @@ class Inventory:
 
     def add_item(self, item):
         for slot in self.slots:
-            if slot.item is None:  # Находим пустую ячейку
+            if slot.item is None:
                 slot.item = item
                 item.set_rect(slot.rect)
                 return True
@@ -195,8 +192,8 @@ class Inventory:
     def draw(self, screen, player):
         if self.is_open:
             # Рисуем фон инвентаря
-            screen.blit(self.background_image, (self.x, self.y))  # Отображаем фон на экране
-            screen.blit(self.background_frame, (self.x, self.y))  # Отображаем фон на экране
+            screen.blit(self.background_image, (self.x, self.y))
+            screen.blit(self.background_frame, (self.x, self.y))
 
             # Рисуем ячейки
             for slot in self.slots:
